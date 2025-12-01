@@ -42,21 +42,11 @@ This project provides a clean, modal-based interface for Zammad ticket systems t
 - Smart caching for better performance
 - File upload with drag-and-drop support
 
-### GitHub Project Structure
-
-This repository follows GitHub's best practices with comprehensive documentation and templates:
-
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Detailed contribution guidelines and development setup
-- **[SECURITY.md](SECURITY.md)** - Security policy and vulnerability reporting process
-- **[LICENSE.md](LICENSE.md)** - Creative Commons Attribution-NonCommercial-ShareAlike 4.0 License
-- **Issue Templates** - Standardized bug reports and feature requests in `.github/ISSUE_TEMPLATE/`
-- **Comprehensive README** - Complete setup instructions and technical documentation
-
 ### Important: Module Requirements
 
 **This project uses ES6 modules and requires a web server** - it cannot be opened directly by double-clicking the HTML file.
 
-> **Need the legacy version?** Check the [`legacy`](https://github.com/DanielKng/zd-ticket-portal/tree/legacy) branch for a version that opens directly in browsers. Same functionality, but this modern version provides cleaner, more maintainable code.
+> **Don't want npx or a webserver?** Check the [`legacy`](https://github.com/DanielKng/zd-ticket-portal/tree/legacy) branch for a version that opens directly in browsers, locally. Same functionality, but this modern version provides cleaner, more maintainable code.
 
 To run the project locally for testing:
 
@@ -71,64 +61,31 @@ npx serve .
 # Open http://localhost:3000/src/html/nf_gui.html in your browser
 ```
 
-**Option 2: Deploy to your web server**
+**Option 2: Deploy directly to your web server**
 Since you'll be integrating this into your website anyway, you can upload the files directly to your web server and test there.
 
-**Why this is required:** Modern ES6 modules have security restrictions that prevent them from loading via the `file://` protocol. A proper HTTP server is required.
+**Why this is required:** ES6 modules have security restrictions that prevent them from loading via the `file://` protocol. A proper HTTP server is required.
 
----
-
-## Recent Updates
-
-### Attachment System Implementation & Bug Fixes
-*July 15, 2025*
-
-- **Complete Attachment Functionality** - Added full file attachment support to ticket replies with "Attach files..." button
-- **Centralized File Upload Module** - New `nf-file-upload.js` with validation, Base64 conversion, and drag-drop support
-- **Email Attachment Support** - Enhanced configuration to support email file types (.eml, .msg, .mbox)
-- **Perfect Button Alignment** - Achieved consistent visual alignment with standardized 44px height across all interface buttons
-- **Login Error Fix** - Resolved TypeError in login error handling that caused infinite loader spinning
-- **Internationalization Compliance** - Moved hardcoded strings to proper language files following i18n best practices
-- **UI/UX Polish** - Enhanced file preview functionality and improved overall user interaction flow
-
-### Modal System & UX Improvements
-
-- **Fixed Modal Reopening Bug** - Resolved issue where modal background appeared but content was hidden on second open
-- **Persistent Login Hints** - Credentials hint now stays visible throughout the login process
-- **Smart Status Message Handling** - Login hints remain visible even when error messages appear
-- **Enhanced Modal State Management** - Improved visibility control for better user experience
-
-### Language System Modernization
-*July 14, 2025*
-
-- Migrated to JSON-based language management with separated categories
-- Added event-driven initialization for proper timing
-- Improved date localization with proper locale detection
-- Centralized language configuration in `nf-config.js`
-- Enhanced event system with consolidated keyboard accessibility handling
-- General fixes that needed to be done because I decided to use ES6...
 ---
 
 ## Quick Setup
 
 ### Integration with Contao CMS
+(tested with the [`legacy`](https://github.com/DanielKng/zd-ticket-portal/tree/legacy) branch)
 
 1. Upload all files to your server
 2. Place the contents of `src/html/nf_gui.html` in a new Contao article
 3. Adjust file paths to match your server structure
-4. Remove `<meta charset="utf-8">` for Contao compatibility
-5. **Important:** Must be served via HTTP/HTTPS - ES modules require a web server
+4. Remove `<meta charset="utf-8">` in `nf_guiy.html` for Contao compatibility
 
 ### Other CMS Systems
 
 The portal works as a self-contained modal that can be embedded in any modern web environment. Simply include the HTML file and adjust the JavaScript paths.
 
-**Remember:** Due to ES6 module requirements, files must be served from a web server (not opened directly in browser).
+**Remember:** Due to ES6 module requirements, files must be served from a web server (not opened directly in browser). If you need that functionality, or have trouble getting the ES6-Version to work, try the [`legacy`](https://github.com/DanielKng/zd-ticket-portal/tree/legacy) branch.
 
----
 
 ## Configuration
-
 **Important:** Before using this project, review `src/js/nf-config.js` carefully.
 
 This file controls:

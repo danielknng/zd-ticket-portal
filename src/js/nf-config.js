@@ -31,6 +31,7 @@ const NF_CONFIG = {
      * @property {string} knowledgeBase.flavor - Knowledge base flavor (public/private)
      * @property {number} timeout - Request timeout in milliseconds
      * @property {number} retryAttempts - Number of retry attempts for failed requests
+     *  @property {boolean} allowRequestType - Wether you want to allow the user to pick the request type of his Ticket
      */
     api: {
         baseUrl: 'https://helpdesk.yourdomain.de/api/v1',
@@ -40,7 +41,8 @@ const NF_CONFIG = {
             flavor: "public"
         },
         timeout: 10000,
-        retryAttempts: 3
+        retryAttempts: 3,
+        allowRequestType: true
     },
 
     /**

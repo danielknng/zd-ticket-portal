@@ -300,7 +300,7 @@ async function nfCreateTicket(subject, body, files, requestType) {
             }
         };
 
-        // Attach custom request type ("Anfrageart") if provided
+        // Attach custom request type if provided
         if (requestType && typeof requestType === 'string') {
             ticketData.type = requestType;
         }

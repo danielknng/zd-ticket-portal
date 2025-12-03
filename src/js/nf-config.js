@@ -42,6 +42,7 @@ const NF_CONFIG = {
         },
         timeout: 10000,
         retryAttempts: 3,
+        // If you want to use this feature, make sure that in Zammad you have a custom object with the name "type" and the Type "select". This way, the user can choose the request type of his ticket.
         allowRequestType: true
     },
 
@@ -133,22 +134,23 @@ const NF_CONFIG = {
 
         // Cache settings for performance
         cache: {
-            searchResultsTTL: 2 * 60 * 1000,                    // 2 minutes
-            currentYearActiveTicketListTTL: 15 * 60 * 1000,     // 15 minutes
-            currentYearActiveTicketDetailTTL: 15 * 60 * 1000,   // 15 minutes
-            currentYearClosedTicketListTTL: 4 * 60 * 60 * 1000, // 4 hours
-            currentYearClosedTicketDetailTTL: 4 * 60 * 60 * 1000, // 4 hours
-            archivedTicketListTTL: 30 * 24 * 60 * 60 * 1000,   // 30 days
-            archivedTicketDetailTTL: 30 * 24 * 60 * 60 * 1000, // 30 days
-            requestTypeTTL: 24 * 60 * 60 * 1000                // 24 hours for Anfrageart options
+            searchResultsTTL: 2 * 60 * 1000,                    // 2 minutes for search results (Knowledgebase)
+            currentYearActiveTicketListTTL: 15 * 60 * 1000,     // 15 minutes for active tickets
+            currentYearActiveTicketDetailTTL: 15 * 60 * 1000,   // 15 minutes for active ticket details
+            currentYearClosedTicketListTTL: 4 * 60 * 60 * 1000, // 4 hours for closed tickets
+            currentYearClosedTicketDetailTTL: 4 * 60 * 60 * 1000, // 4 hours for closed ticket details
+            archivedTicketListTTL: 30 * 24 * 60 * 60 * 1000,   // 30 days for archived tickets
+            archivedTicketDetailTTL: 30 * 24 * 60 * 60 * 1000, // 30 days for archived ticket details
+            requestTypeTTL: 24 * 60 * 60 * 1000                // 24 hours for requestType options
         },
 
         // Filter settings - Get status IDs from: https://helpdesk.yourdomain.com/api/v1/ticket_states
+        // What get's shown in the ticket list
         filters: {
             statusCategories: {
-                active: [1, 3, 8, 9, 10],   // new, pending reminder, waiting for customer, in progress, waiting for external
+                active: [1, 2, 3, 8, 9, 10, 13, 15],   // new, open, pending reminder, waiting for customer, in progress, waiting for external
                 closed: [4],                 // closed
-                inactive: [2, 7]             // open (disabled), pending close (disabled)
+                inactive: [5, 7]             // merged, pending close
             },
             defaultStatusFilter: 'active',
             defaultSortOrder: 'date_desc',

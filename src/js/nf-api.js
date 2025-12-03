@@ -395,7 +395,7 @@ async function nfCloseTicket(ticketId) {
     }
 }
 /**
- * Fetches available options for the ticket "type" attribute (custom object "Anfrageart").
+ * Fetches available options for the ticket "type" attribute.
  * Uses Zammad's Object Manager API to retrieve the attribute definition and its options.
  *
  * @returns {Promise<{ options: Array<{value: string, label: string}>, defaultValue: string | null }>} 
@@ -408,7 +408,6 @@ async function nfFetchRequestTypes() {
     if (!baseUrl) {
         throw new Error('Zammad API base URL is not configured');
     }
-
     // Cache key for request types
     const cacheKey = 'ticket_request_types';
 
@@ -421,12 +420,12 @@ async function nfFetchRequestTypes() {
             return cached;
         }
     }
-
     // Simple in-memory cache as an additional fast path
     if (nfRequestTypesCache && Array.isArray(nfRequestTypesCache.options) && nfRequestTypesCache.options.length > 0) {
         return nfRequestTypesCache;
     }
 
+    // Fetch request types from Zammad
     const response = await nfApiGet(`${baseUrl}/object_manager_attributes?object=Ticket&name=type`, {
         headers: {
             'Authorization': `Basic ${nf.userToken}`,
@@ -434,6 +433,7 @@ async function nfFetchRequestTypes() {
         }
     });
 
+    // Check if the request was successful
     if (!response.ok) {
         const errorMessage = `Error loading request types: ${response.status} ${response.statusText}`;
         if (typeof NFError !== 'undefined') {
@@ -442,21 +442,23 @@ async function nfFetchRequestTypes() {
             throw new Error(errorMessage);
         }
     }
-
+    // Get the data from the response
     const data = await response.json();
-    const attribute = Array.isArray(data) ? data[0] : data;
+    // Check if the data is an array
+    const attribute = Array.isArray(data)
+        ? data.find(a => a.object === 'Ticket' && a.name === 'type')
+        : data;
+    // Check if the attribute is found
     if (!attribute || !attribute.data_option) {
+        // If the attribute is not found, return an empty array
         nfRequestTypesCache = { options: [], defaultValue: null };
         return nfRequestTypesCache;
     }
 
     const dataOption = attribute.data_option;
     let options = [];
-
-    // Zammad exposes "data_option.options" either as an object map or an array for select fields
+    // Check if the data option is an array
     if (Array.isArray(dataOption.options)) {
-        // Array variant from your example:
-        // "options":[{"name":"Allgemeine Anfrage","value":"general_request"}, ...]
         options = dataOption.options
             .map(opt => ({
                 value: String(opt.value ?? opt.name ?? ''),
@@ -464,24 +466,26 @@ async function nfFetchRequestTypes() {
             }))
             .filter(o => o.value);
     } else if (dataOption.options && typeof dataOption.options === 'object') {
-        // Object map: { "value": "Label", ... }
+        // If the data option is an object, convert it to an array
         options = Object.entries(dataOption.options).map(([value, label]) => ({
             value: String(value),
             label: String(label)
         }));
     }
 
+    // Get the default value
     const defaultValue = typeof dataOption.default === 'string' ? dataOption.default : null;
 
+    // Store the request types in the cache
     nfRequestTypesCache = { options, defaultValue };
-
-    // Store in global cache if configured
+    // Store the request types in the cache if configured
     if (requestTypeTTL && typeof window.nfCache !== 'undefined') {
         window.nfCache.set(cacheKey, nfRequestTypesCache, requestTypeTTL);
     }
-
+    // Return the request types
     return nfRequestTypesCache;
 }
+
 
 /**
  * Loads tickets based on filter criteria (status category, year, etc.)

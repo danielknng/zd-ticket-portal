@@ -1,10 +1,6 @@
 /**
- * @fileoverview UI control and navigation for the tic    nfModal.open('nf_ticketlist_container');
-    
-    nfSetLoading(false);
-}
-
-/**@author Daniel Könning
+ * @fileoverview UI control and navigation for the ticket system
+ * @author Daniel Könning
  * @module NFUI
  * @since 2025-07-15
  * @version 1.0.0

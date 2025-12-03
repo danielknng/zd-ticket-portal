@@ -687,14 +687,6 @@ async function nfFetchTicketsFiltered(filters = {}) {
             });
         }
         
-        if (typeof nfLogger !== 'undefined') {
-            nfLogger.info('Filtered tickets fetched successfully', { 
-                count: ticketsArray.length,
-                statusCategory,
-                year
-            });
-        }
-        
         // Performance measurement complete
         if (typeof nfPerf !== 'undefined' && window.NF_CONFIG?.debug?.enabled) {
             nfPerf.measure(`Fetch Filtered Tickets (${statusCategory})`, `fetch-tickets-${statusCategory}-start`);

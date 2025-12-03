@@ -9,6 +9,18 @@
 import { NF_CONFIG } from './nf-config.js';
 
 /**
+ * Creates standardized authentication headers for Zammad API requests
+ * @param {string} token - Authentication token (Basic auth credentials)
+ * @returns {Object} Headers object with Authorization and Content-Type
+ */
+export function getAuthHeaders(token) {
+    return {
+        'Authorization': `Basic ${token}`,
+        'Content-Type': 'application/json'
+    };
+}
+
+/**
  * Unified API fetch utility with retries and error handling, using config values
  * @param {string} url - The API endpoint
  * @param {object} options - Fetch options (method, headers, body, etc.)

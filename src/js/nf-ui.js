@@ -201,7 +201,7 @@ function nfShowNewTicket() {
 }
 
 /**
- * Shows or hides the request type ("Anfrageart") field based on configuration.
+ * Shows or hides the request type field based on configuration.
  * If disabled, the field is hidden and its value cleared.
  */
 function nfToggleRequestTypeVisibility() {
@@ -219,7 +219,7 @@ function nfToggleRequestTypeVisibility() {
 }
 
 /**
- * Loads available request types ("Anfrageart") from Zammad and populates the
+ * Loads available request types from Zammad and populates the
  * drop-down in the new ticket form.
  */
 async function nfPopulateRequestTypeOptions() {

@@ -341,23 +341,30 @@ export class Config {
 
 ### Current State Metrics
 - **Total Lines**: ~8,000+ lines
-- **Duplicated Patterns**: ~1,000+ instances across 35 patterns
+- **Duplicated Patterns**: ~1,100+ instances across 42 patterns (updated)
 - **Functions**: 148 functions
 - **DOM Queries**: 197 instances
 - **Typeof Checks**: 279 instances
 - **Logger Checks**: 135 instances
 - **Form Data Extraction**: 71 instances
 - **Element Properties**: 116 instances
+- **Focusable Queries**: 3 instances (NEW)
+- **Cache TTL Calculations**: 2 instances (NEW)
+- **Performance Measurements**: 6 instances (NEW)
+- **Modal ID Iterations**: 6 instances (NEW)
+- **Modal Visibility Checks**: 4 instances (NEW)
+- **Option Setting**: 2 instances (NEW)
+- **File Processing Loops**: 2 instances (NEW)
 
 ### Target State
-- **Total Lines**: ~3,800 lines (52% reduction)
+- **Total Lines**: ~3,600 lines (55% reduction - improved!)
 - **Duplicated Patterns**: 0 instances
-- **Functions**: ~75 functions (consolidated)
+- **Functions**: ~70 functions (consolidated)
 - **All Patterns**: Centralized utilities
 
 ---
 
-## 📊 Duplication Patterns (35 Total)
+## 📊 Duplication Patterns (42 Total)
 
 ### Critical Patterns (High Impact)
 

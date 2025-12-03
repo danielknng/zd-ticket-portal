@@ -1,5 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
 <button id="nf-zammad-trigger" class="nf-trigger-btn" aria-label="">
     <img src=""
          alt=""
@@ -234,69 +239,11 @@
   </div>
 </div>
 
-<!-- JS: Modular JavaScript files for the new frontend -->
-<!-- Base modules -->
-<script type="module" src="../js/nf-config.js"></script>
-<script type="module" src="../js/nf-lang.js"></script>
-<script type="module" src="../js/nf-utils.js"></script>
-<script type="module" src="../js/nf-cache.js"></script>
+<!-- Core configuration (initializes language system) -->
+<script type="module" src="../js/core/config.js"></script>
 
-<!-- Core modules (DOM and UI helpers) -->
-<script type="module" src="../js/nf-dom.js"></script>
-<script type="module" src="../js/nf-helpers.js"></script>
-
-<!-- New modularized core UI and logic modules -->
-<script type="module" src="../js/nf-modal.js"></script>
-<script type="module" src="../js/nf-file-upload.js"></script>
-<script type="module" src="../js/nf-api-utils.js"></script>
-<script type="module" src="../js/nf-status.js"></script>
-<script type="module" src="../js/nf-template-utils.js"></script>
-
-<!-- API and UI modules -->
-<script type="module" src="../js/nf-api.js"></script>
-<script type="module" src="../js/nf-ui.js"></script>
-<script type="module" src="../js/nf-ui-init.js"></script>
-<script type="module" src="../js/nf-search.js"></script>
-<script type="module" src="../js/nf-gallery.js"></script>
-
-<!-- Ticket modules (depend on core and API modules) -->
-<script type="module" src="../js/nf-ticket-list.js"></script>
-<script type="module" src="../js/nf-ticket-detail.js"></script>
-<script type="module" src="../js/nf-ticket-actions.js"></script>
-<script type="module" src="../js/nf-ticket-create.js"></script>
-
-<!-- Events (must be loaded last to link all functions) -->
-<script type="module" src="../js/nf-events.js"></script>
-
-<!-- Apply configuration after all modules are loaded -->
-<script>
-// UI initialization with configuration values
-// Wait for language system to be ready before initializing UI
-
-function initializeUI() {
-    if (window.NF_UI_INIT) {
-        window.NF_UI_INIT.init();
-    } else {
-        console.error('NF_UI_INIT not available - UI initialization failed');
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if language system is ready
-    if (window.nfLabels) {
-        // Language system already loaded
-        initializeUI();
-    } else {
-        // Wait for language system to be ready
-        window.addEventListener('nfLanguageReady', initializeUI);
-        
-        // Fallback timeout in case language system fails
-        setTimeout(() => {
-            if (!window.nfLabels) {
-                console.warn('Language system not ready after timeout, initializing UI anyway');
-                initializeUI();
-            }
-        }, 2000);
-    }
-});
-</script>
+<!-- Main application entry point (initializes all services and components) -->
+<!-- Note: app.js handles UI label initialization after language system is ready -->
+<script type="module" src="../js/app.js"></script>
+</body>
+</html>

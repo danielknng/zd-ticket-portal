@@ -137,7 +137,7 @@ The portal works as a self-contained modal that can be embedded in any modern we
 
 ## Configuration
 
-All configuration is managed in `src/js/nf-config.js`. This file controls:
+All configuration is managed in `src/js/core/config.js`. This file controls:
 
 - **API Endpoints** - Your Zammad server URLs and authentication
 - **Language Settings** - Supported languages and file paths
@@ -166,7 +166,7 @@ api: {
 
 To enable request type selection in the ticket creation form:
 
-1. **Enable the feature** in `nf-config.js`:
+1. **Enable the feature** in `src/js/core/config.js`:
    ```javascript
    api: {
        allowRequestType: true
@@ -333,7 +333,7 @@ To enable request type selection in the ticket creation form, you must configure
 ### Project Structure
 
 ```
-ticket_frontend/
+zd-ticket-portal/
 ├── .github/
 │   └── ISSUE_TEMPLATE/         # Bug report and feature request templates
 ├── public/
@@ -345,23 +345,56 @@ ticket_frontend/
 │   │   ├── layout/            # Cards, sections
 │   │   └── modules/           # Feature-specific styles
 │   ├── js/                     # JavaScript modules
-│   │   ├── nf-config.js       # Central configuration
-│   │   ├── nf-lang.js         # Language management
-│   │   ├── nf-api.js          # API communication
-│   │   ├── nf-api-utils.js    # API utilities and helpers
-│   │   ├── nf-cache.js        # Caching system
-│   │   ├── nf-dom.js          # DOM references
-│   │   ├── nf-events.js       # Event handling
-│   │   ├── nf-file-upload.js  # File handling
-│   │   ├── nf-gallery.js      # Image gallery
-│   │   ├── nf-helpers.js      # Utility functions
-│   │   ├── nf-modal.js        # Modal management
-│   │   ├── nf-search.js       # Knowledge base search
-│   │   ├── nf-status.js       # Status messages
-│   │   ├── nf-ticket-*.js     # Ticket-related modules
-│   │   ├── nf-ui.js           # UI navigation
-│   │   ├── nf-ui-init.js      # UI initialization
-│   │   └── nf-utils.js        # Core utilities
+│   │   ├── app.js             # Main application entry point
+│   │   ├── core/              # Core system modules
+│   │   │   ├── config.js      # Central configuration
+│   │   │   ├── constants.js   # Global constants
+│   │   │   ├── logger.js      # Logging system
+│   │   │   └── storage.js     # localStorage utilities
+│   │   ├── api/               # API layer
+│   │   │   ├── client.js      # Zammad API client
+│   │   │   ├── http.js        # HTTP utilities
+│   │   │   ├── cache.js       # Caching system
+│   │   │   ├── cache-strategy.js  # Cache TTL strategies
+│   │   │   ├── auth.js        # Authentication service
+│   │   │   ├── tickets.js    # Ticket service
+│   │   │   └── knowledge-base.js  # Knowledge base service
+│   │   ├── state/             # State management
+│   │   │   ├── store.js      # Application state
+│   │   │   └── events.js     # Event bus
+│   │   ├── ui/                # UI layer
+│   │   │   ├── dom.js        # DOM element references
+│   │   │   ├── modal.js      # Modal management
+│   │   │   ├── status.js     # Status messages
+│   │   │   ├── helpers.js    # UI helper functions
+│   │   │   ├── init.js       # UI initialization
+│   │   │   └── modal-utils.js  # Modal utilities
+│   │   ├── features/          # Feature modules
+│   │   │   ├── tickets/      # Ticket features
+│   │   │   │   ├── list.js   # Ticket list
+│   │   │   │   ├── detail.js # Ticket detail view
+│   │   │   │   ├── create.js # Ticket creation
+│   │   │   │   └── actions.js  # Ticket actions (reply, close)
+│   │   │   ├── search/       # Search features
+│   │   │   │   └── knowledge-base.js  # Knowledge base search
+│   │   │   ├── upload/       # File upload
+│   │   │   │   └── file-handler.js  # File handling
+│   │   │   └── gallery/      # Image gallery
+│   │   │       └── viewer.js  # Gallery viewer
+│   │   ├── utils/            # Utility modules
+│   │   │   ├── validation.js  # Input validation
+│   │   │   ├── error-boundary.js  # Error handling
+│   │   │   ├── safe-access.js  # Safe global access
+│   │   │   ├── loading.js     # Loading state wrapper
+│   │   │   ├── errors.js     # Custom error classes
+│   │   │   ├── file-processor.js  # File processing
+│   │   │   ├── performance.js  # Performance monitoring
+│   │   │   ├── visibility.js  # Visibility utilities
+│   │   │   ├── focus.js      # Focus management
+│   │   │   ├── template.js   # Template utilities
+│   │   │   └── debounce.js   # Debounce utility
+│   │   └── i18n/             # Internationalization
+│   │       └── manager.js    # Language manager
 │   ├── lang/                   # Language files
 │   │   ├── en/                # English translations
 │   │   └── de/                # German translations
@@ -389,7 +422,7 @@ src/lang/
     └── (same structure)
 ```
 
-Configuration in `nf-config.js`:
+Configuration in `src/js/core/config.js`:
 
 ```javascript
 language: {
@@ -414,7 +447,7 @@ language: {
 
 1. Create new folder: `src/lang/[language-code]/`
 2. Copy and translate all JSON files from an existing language
-3. Add language configuration to `nf-config.js`:
+3. Add language configuration to `src/js/core/config.js`:
    ```javascript
    supported: {
        en: { locale: 'en-US', label: 'English' },
@@ -435,12 +468,15 @@ language: {
 
 The project uses ES6 modules with clear separation of concerns:
 
-- **Core Modules** - Configuration, utilities, DOM management
-- **Feature Modules** - Tickets, search, gallery, file upload
-- **UI Modules** - Navigation, modals, status messages
-- **API Modules** - Communication, authentication, caching
+- **Core Modules** (`core/`) - Configuration, constants, logging, storage
+- **API Layer** (`api/`) - HTTP client, authentication, ticket operations, caching
+- **State Management** (`state/`) - Application state and event bus
+- **UI Layer** (`ui/`) - DOM references, modals, status messages, helpers
+- **Feature Modules** (`features/`) - Tickets, search, file upload, gallery
+- **Utilities** (`utils/`) - Validation, error handling, performance, helpers
+- **Internationalization** (`i18n/`) - Language management
 
-All modules follow consistent patterns for imports, exports, and error handling.
+All modules follow consistent ES6 import/export patterns with proper dependency injection and no backward compatibility prefixes.
 
 ---
 
@@ -450,15 +486,15 @@ All modules follow consistent patterns for imports, exports, and error handling.
 
 1. Clone the repository
 2. Install a local web server (or use `npx serve`)
-3. Configure `nf-config.js` with your Zammad instance
+3. Configure `src/js/core/config.js` with your Zammad instance
 4. Enable debug logging for development
 5. Open `src/html/nf_gui.html` in your browser
 
 ### Code Style
 
 - Use ES6 modules for all JavaScript
-- Follow existing naming conventions (`nf*` prefix for functions)
-- Use centralized utilities (`nfShowStatus`, `nfLogger`, etc.)
+- Follow existing naming conventions (no backward compatibility prefixes)
+- Use centralized utilities (`showStatus`, `logger`, etc.)
 - Maintain language file organization
 - Include appropriate debug logging
 - Update documentation for new features
@@ -486,7 +522,7 @@ Test with various scenarios:
 **Cache Not Working**
 - **Symptom:** Data not persisting between sessions
 - **Solution:** Check localStorage availability in browser settings
-- **Check:** Verify TTL configuration in `nf-config.js`
+- **Check:** Verify TTL configuration in `src/js/core/config.js`
 
 **Login Issues**
 - **Symptom:** Authentication fails or hangs
@@ -496,20 +532,20 @@ Test with various scenarios:
 
 **Language Not Loading**
 - **Symptom:** Interface shows translation keys instead of text
-- **Solution:** Check file paths in `nf-config.js`
+- **Solution:** Check file paths in `src/js/core/config.js`
 - **Check:** Verify language files exist and are valid JSON
 - **Debug:** Check browser network tab for failed requests
 
 **Request Types Not Showing**
 - **Symptom:** Dropdown is empty or hidden
-- **Solution:** Verify `allowRequestType: true` in configuration
+- **Solution:** Verify `allowRequestType: true` in `src/js/core/config.js`
 - **Check:** Confirm custom object is configured in Zammad (see [Zammad Setup](#zammad-setup))
 - **Verify:** Test API endpoint returns attribute data
 - **Debug:** Check browser console for API errors
 
 **File Upload Fails**
 - **Symptom:** Files not attaching to tickets
-- **Solution:** Check file size limits in `nf-config.js`
+- **Solution:** Check file size limits in `src/js/core/config.js`
 - **Check:** Verify allowed file types in security configuration
 - **Debug:** Enable debug logging to see validation errors
 
@@ -548,20 +584,30 @@ For security-related issues, please review the [Security Policy](SECURITY.md) an
 When contributing code:
 
 1. Follow the established ES6 module patterns
-2. Use the centralized `nfShowStatus()` for user messaging
+2. Use the centralized `showStatus()` for user messaging
 3. Maintain the language file organization
 4. Include appropriate debug logging
 5. Test with various ticket states and cache scenarios
 6. Update documentation for new features
+7. Use proper imports instead of global variables
+8. Follow the new directory structure (core/, api/, features/, ui/, utils/, state/, i18n/)
 
 ---
 
 ## Development Timeline
 
-**November 30, 2025** - Request Types
+**November 2025** - Request Types & Cleanup
 - Added request type selection in ticket creation form
 - Configurable filtering of available request types
 - Integration with Zammad custom object attributes
+- Removed all backward compatibility code and `nf` prefixes
+- Renamed DOM object from `nf` to `dom` for clarity
+- Reorganized codebase into logical directories (core/, api/, features/, ui/, utils/, state/, i18n/)
+- Implemented proper dependency injection pattern
+- Created service layer for API operations (AuthService, TicketService, KnowledgeBaseService)
+- Centralized error handling and validation
+- Improved code maintainability and separation of concerns
+- Zero build step deployment with ES6 modules
 
 **July 15, 2025** - Attachment System & Polish
 - Complete attachment implementation with "Attach files..." button for ticket replies

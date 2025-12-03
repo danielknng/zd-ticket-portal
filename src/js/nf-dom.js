@@ -163,6 +163,7 @@ const nf = {
      */
     newTicketContainer: document.getElementById('nf_new_ticket_container'), // Container for complete ticket form
     newTicketForm: document.getElementById('nf_new_ticket_form'),           // Form element for ticket data
+    newTicketRequestType: document.getElementById('nf_new_ticket_requesttype'), // Select for ticket request type ("Anfrageart")
     newTicketSubject: document.getElementById('nf_new_ticket_subject'),     // Input field for ticket subject
     newTicketBody: document.getElementById('nf_new_ticket_body'),           // Textarea for ticket description
     newTicketAttachment: document.getElementById('nf_new_ticket_attachment'), // File upload for attachments

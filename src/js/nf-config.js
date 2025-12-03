@@ -139,7 +139,8 @@ const NF_CONFIG = {
             currentYearClosedTicketListTTL: 4 * 60 * 60 * 1000, // 4 hours
             currentYearClosedTicketDetailTTL: 4 * 60 * 60 * 1000, // 4 hours
             archivedTicketListTTL: 30 * 24 * 60 * 60 * 1000,   // 30 days
-            archivedTicketDetailTTL: 30 * 24 * 60 * 60 * 1000  // 30 days
+            archivedTicketDetailTTL: 30 * 24 * 60 * 60 * 1000, // 30 days
+            requestTypeTTL: 24 * 60 * 60 * 1000                // 24 hours for Anfrageart options
         },
 
         // Filter settings - Get status IDs from: https://helpdesk.yourdomain.com/api/v1/ticket_states

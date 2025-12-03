@@ -268,9 +268,10 @@ async function nfFetchTicketDetail(ticketId) {
  * @param {string} subject - Subject/title of the new ticket
  * @param {string} body - Message text of the ticket (can contain HTML)
  * @param {FileList|Array} files - Optional: array of file objects for attachments
+ * @param {string} [requestType] - Optional ticket request type (custom object \"type\")
  * @returns {Promise<Object>} The created ticket object or throws error
  */
-async function nfCreateTicket(subject, body, files) {
+async function nfCreateTicket(subject, body, files, requestType) {
     try {
         if (!subject || !body) throw new Error('Subject and message are required');
         
@@ -298,6 +299,11 @@ async function nfCreateTicket(subject, body, files) {
                 attachments: attachments.length > 0 ? attachments : undefined
             }
         };
+
+        // Attach custom request type ("Anfrageart") if provided
+        if (requestType && typeof requestType === 'string') {
+            ticketData.type = requestType;
+        }
         
         const response = await nfApiPost(`${ZAMMAD_API_URL()}/tickets`, ticketData, {
             headers: {
@@ -387,6 +393,94 @@ async function nfCloseTicket(ticketId) {
     } catch (error) {
         throw error;  // Pass error to calling function
     }
+}
+/**
+ * Fetches available options for the ticket "type" attribute (custom object "Anfrageart").
+ * Uses Zammad's Object Manager API to retrieve the attribute definition and its options.
+ *
+ * @returns {Promise<{ options: Array<{value: string, label: string}>, defaultValue: string | null }>} 
+ *          Object containing selectable request types and the Zammad default value
+ */
+let nfRequestTypesCache = null;
+
+async function nfFetchRequestTypes() {
+    const baseUrl = ZAMMAD_API_URL();
+    if (!baseUrl) {
+        throw new Error('Zammad API base URL is not configured');
+    }
+
+    // Cache key for request types
+    const cacheKey = 'ticket_request_types';
+
+    // Try global TTL cache first (configured in NF_CONFIG.ui.cache.requestTypeTTL)
+    const requestTypeTTL = window.NF_CONFIG?.ui?.cache?.requestTypeTTL;
+    if (requestTypeTTL && typeof window.nfCache !== 'undefined') {
+        const cached = window.nfCache.get(cacheKey);
+        if (cached && Array.isArray(cached.options) && cached.options.length > 0) {
+            nfRequestTypesCache = cached;
+            return cached;
+        }
+    }
+
+    // Simple in-memory cache as an additional fast path
+    if (nfRequestTypesCache && Array.isArray(nfRequestTypesCache.options) && nfRequestTypesCache.options.length > 0) {
+        return nfRequestTypesCache;
+    }
+
+    const response = await nfApiGet(`${baseUrl}/object_manager_attributes?object=Ticket&name=type`, {
+        headers: {
+            'Authorization': `Basic ${nf.userToken}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!response.ok) {
+        const errorMessage = `Error loading request types: ${response.status} ${response.statusText}`;
+        if (typeof NFError !== 'undefined') {
+            throw new NFError(errorMessage, 'FETCH_REQUEST_TYPES_FAILED');
+        } else {
+            throw new Error(errorMessage);
+        }
+    }
+
+    const data = await response.json();
+    const attribute = Array.isArray(data) ? data[0] : data;
+    if (!attribute || !attribute.data_option) {
+        nfRequestTypesCache = { options: [], defaultValue: null };
+        return nfRequestTypesCache;
+    }
+
+    const dataOption = attribute.data_option;
+    let options = [];
+
+    // Zammad exposes "data_option.options" either as an object map or an array for select fields
+    if (Array.isArray(dataOption.options)) {
+        // Array variant from your example:
+        // "options":[{"name":"Allgemeine Anfrage","value":"general_request"}, ...]
+        options = dataOption.options
+            .map(opt => ({
+                value: String(opt.value ?? opt.name ?? ''),
+                label: String(opt.label ?? opt.name ?? opt.value ?? '')
+            }))
+            .filter(o => o.value);
+    } else if (dataOption.options && typeof dataOption.options === 'object') {
+        // Object map: { "value": "Label", ... }
+        options = Object.entries(dataOption.options).map(([value, label]) => ({
+            value: String(value),
+            label: String(label)
+        }));
+    }
+
+    const defaultValue = typeof dataOption.default === 'string' ? dataOption.default : null;
+
+    nfRequestTypesCache = { options, defaultValue };
+
+    // Store in global cache if configured
+    if (requestTypeTTL && typeof window.nfCache !== 'undefined') {
+        window.nfCache.set(cacheKey, nfRequestTypesCache, requestTypeTTL);
+    }
+
+    return nfRequestTypesCache;
 }
 
 /**
@@ -612,4 +706,4 @@ function nfSortTickets(tickets, sortOrder = 'date_desc') {
     }
 }
 
-export { nfAuthenticateUser, nfFetchTicketsFiltered, nfCloseTicket, nfSendReply, nfFetchTicketDetail, nfCreateTicket };
+export { nfAuthenticateUser, nfFetchTicketsFiltered, nfCloseTicket, nfSendReply, nfFetchTicketDetail, nfCreateTicket, nfFetchRequestTypes };

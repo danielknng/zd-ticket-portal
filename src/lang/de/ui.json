@@ -59,6 +59,9 @@
   },
   "newTicketTitle": "Neues Ticket erstellen",
   "newTicketLabels": {
+    "requestType": "Anfrageart",
+    "requestTypePlaceholder": "Bitte wählen Sie eine Anfrageart",
+    "requestTypeLoadError": "Die Anfragearten konnten nicht geladen werden. Sie können Ihr Ticket trotzdem absenden.",
     "subject": "Betreff",
     "subjectPlaceholder": "Eine kurze Zusammenfassung Ihrer Anfrage",
     "body": "Nachricht",

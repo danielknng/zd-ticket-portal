@@ -312,6 +312,7 @@ const NF_UI_INIT = {
         if (!labels.newTicketTitle || !labels.newTicketLabels) return;
 
         const title = document.querySelector('.nf-newticket-title');
+        const requestTypeLabel = document.querySelector('label[for="nf_new_ticket_requesttype"]');
         const subjectLabel = document.querySelector('label[for="nf_new_ticket_subject"]');
         const bodyLabel = document.querySelector('label[for="nf_new_ticket_body"]');
         const attachmentLabel = document.querySelector('label[for="nf_new_ticket_attachment"]');
@@ -323,6 +324,10 @@ const NF_UI_INIT = {
 
         if (title) {
             title.textContent = labels.newTicketTitle;
+        }
+
+        if (requestTypeLabel && labels.newTicketLabels.requestType) {
+            requestTypeLabel.textContent = labels.newTicketLabels.requestType;
         }
 
         if (subjectLabel) {

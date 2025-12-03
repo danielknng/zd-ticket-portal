@@ -59,6 +59,9 @@
   },
   "newTicketTitle": "Create new ticket",
   "newTicketLabels": {
+    "requestType": "Request type",
+    "requestTypePlaceholder": "Please choose a request type",
+    "requestTypeLoadError": "Request types could not be loaded. You can still submit your ticket.",
     "subject": "Subject",
     "subjectPlaceholder": "A short summary of your request",
     "body": "Message",

@@ -11,6 +11,7 @@ import { nfSetLoading } from './nf-helpers.js';
 import { nfShowStatus } from './nf-status.js';
 import { nfClearFilePreview, nfValidateFile } from './nf-file-upload.js';
 import { nf } from './nf-dom.js';
+import { NF_CONFIG } from './nf-config.js';
 
 /**
  * Handles submitting the new ticket form
@@ -24,6 +25,7 @@ export async function handleNewTicketSubmit(e) {
     try {
         const subject = nf.newTicketSubject.value.trim();
         const body = nf.newTicketBody.value.trim();
+        const requestType = nf.newTicketRequestType ? nf.newTicketRequestType.value : '';
         const files = nf.newTicketAttachment.files;
         
         if (!subject || !body) {
@@ -41,7 +43,9 @@ export async function handleNewTicketSubmit(e) {
         }
         window.nfLogger.info('Creating ticket', { subject, hasFiles: files.length > 0 });
         
-        await nfCreateTicket(subject, body, files);
+        const effectiveRequestType = (NF_CONFIG.api?.allowRequestType && requestType) ? requestType : undefined;
+
+        await nfCreateTicket(subject, body, files, effectiveRequestType);
         nfShowStatus(window.nfGetMessage('ticketCreated'), 'success', 'newticket');
         
         nf.newTicketForm.reset();

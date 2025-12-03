@@ -15,7 +15,7 @@ import { nf } from './nf-dom.js';
 import { nfShow, nfHide } from './nf-helpers.js';
 import { nfSetLoading } from './nf-helpers.js';
 import { nfShowStatus, nfClearLoginStatus, nfShowPersistentLoginHint, nfClearPersistentLoginHint } from './nf-status.js';
-import { nfAuthenticateUser } from './nf-api.js';
+import { nfAuthenticateUser, nfFetchRequestTypes } from './nf-api.js';
 import { nfLang } from './nf-lang.js';
 import nfModal from './nf-modal.js';
 
@@ -186,10 +186,89 @@ function nfShowNewTicket() {
     nfHide(nf.ticketListContainer);   // Hide ticket list
     nfHide(nf.ticketDetailContainer); // Hide ticket details
     nfHide(nf.loginContainer);        // Hide login form
-    
+
+    // Show or hide the request type field based on configuration
+    nfToggleRequestTypeVisibility();
+
     nfModal.open('nf_new_ticket_container');
     
+    // Load "Anfrageart" / request type options only if enabled
+    if (NF_CONFIG.api?.allowRequestType) {
+        nfPopulateRequestTypeOptions();
+    }
+    
     nfSetLoading(false);
+}
+
+/**
+ * Shows or hides the request type ("Anfrageart") field based on configuration.
+ * If disabled, the field is hidden and its value cleared.
+ */
+function nfToggleRequestTypeVisibility() {
+    const group = document.getElementById('nf_new_ticket_requesttype_group');
+    if (!group) return;
+
+    if (NF_CONFIG.api?.allowRequestType) {
+        group.classList.remove('nf-hidden');
+    } else {
+        group.classList.add('nf-hidden');
+        if (nf.newTicketRequestType) {
+            nf.newTicketRequestType.value = '';
+        }
+    }
+}
+
+/**
+ * Loads available request types ("Anfrageart") from Zammad and populates the
+ * drop-down in the new ticket form.
+ */
+async function nfPopulateRequestTypeOptions() {
+    if (!nf.newTicketRequestType) return;
+
+    const select = nf.newTicketRequestType;
+    select.innerHTML = '';
+    select.disabled = true;
+
+    try {
+        const { options, defaultValue } = await nfFetchRequestTypes();
+        if (!options || options.length === 0) {
+            // Nothing to show, keep disabled
+            return;
+        }
+
+        // Placeholder / "please choose" entry
+        const placeholderOption = document.createElement('option');
+        placeholderOption.value = '';
+        placeholderOption.disabled = true;
+        placeholderOption.textContent =
+            nfLang.getLabel('newTicketLabels.requestTypePlaceholder') ||
+            nfLang.getLabel('newTicketLabels.requestType') ||
+            '';
+        select.appendChild(placeholderOption);
+
+        options.forEach(({ value, label }) => {
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.textContent = label;
+
+            // Apply Zammad default if available
+            if (defaultValue && value === defaultValue) {
+                opt.selected = true;
+            }
+
+            select.appendChild(opt);
+        });
+
+        select.disabled = false;
+    } catch (error) {
+        window.nfLogger?.warn('Failed to load request types', { error: error.message });
+        // Optional: show a non-blocking status message in the new ticket modal
+        nfShowStatus(
+            nfLang.getLabel('newTicketLabels.requestTypeLoadError') || error.message,
+            'warning',
+            'newticket'
+        );
+    }
 }
 
 /**

@@ -44,7 +44,8 @@ const NF_CONFIG = {
         retryAttempts: 3,
         // If you want to use this feature, make sure that in Zammad you have a custom object with the name "type" and the format "Single selection field". 
         // This way, the user can choose the request type of his ticket. (E.g.: General request, Issue, Question, ...)
-        allowRequestType: false
+        // Check the filters.allowedRequestTypes to see which request types are allowed to be chosen (further below in the file).
+        allowRequestType: true
     },
 
     /**
@@ -117,6 +118,7 @@ const NF_CONFIG = {
      * @property {number} defaultGroup - Default group ID for new tickets
      * @property {Object} cache - Cache configuration with TTL values
      * @property {Object} filters - Filter and sorting configuration
+     * @property {Array<string>} filters.allowedRequestTypes - Optional array of allowed request type values to show in dropdown
      */
     ui: {
         // Timing settings
@@ -160,7 +162,12 @@ const NF_CONFIG = {
                 new Date().getFullYear(),
                 new Date().getFullYear() - 1,
                 new Date().getFullYear() - 2
-            ]
+            ],
+            // Allowed request types to show in the dropdown (optional)
+            // If not specified or empty, all available request types will be shown
+            // Values must match the "value" field from Zammad's object_manager_attributes API
+            // Example: ["problem", "general_request", "procurement"]
+            allowedRequestTypes: []
         }
     },
 

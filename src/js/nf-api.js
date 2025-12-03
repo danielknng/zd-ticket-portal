@@ -479,8 +479,33 @@ async function nfFetchRequestTypes() {
         }));
     }
 
-    // Get the default value
-    const defaultValue = typeof dataOption.default === 'string' ? dataOption.default : null;
+    // Filter options based on configuration (if allowedRequestTypes is specified)
+    const allowedRequestTypes = window.NF_CONFIG?.ui?.filters?.allowedRequestTypes;
+    if (Array.isArray(allowedRequestTypes) && allowedRequestTypes.length > 0) {
+        const allowedSet = new Set(allowedRequestTypes.map(v => String(v)));
+        options = options.filter(opt => allowedSet.has(opt.value));
+        if (typeof nfLogger !== 'undefined') {
+            nfLogger.debug('Filtered request types based on configuration', {
+                totalOptions: dataOption.options?.length || 0,
+                allowedCount: allowedRequestTypes.length,
+                filteredCount: options.length,
+                allowedTypes: allowedRequestTypes
+            });
+        }
+    }
+
+    // Get the default value (but only if it's in the filtered options)
+    let defaultValue = typeof dataOption.default === 'string' ? dataOption.default : null;
+    if (defaultValue && !options.some(opt => opt.value === defaultValue)) {
+        // Default value is not in the allowed list, use first option or null
+        defaultValue = options.length > 0 ? options[0].value : null;
+        if (typeof nfLogger !== 'undefined') {
+            nfLogger.debug('Default request type not in allowed list, using first available', {
+                originalDefault: dataOption.default,
+                newDefault: defaultValue
+            });
+        }
+    }
 
     // Store the request types in the cache
     nfRequestTypesCache = { options, defaultValue };

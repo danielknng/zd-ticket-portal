@@ -7,6 +7,24 @@
  */
 
 /**
+ * Timing constants for UI transitions and delays
+ * @constant {Object} TIMING_CONSTANTS
+ */
+const TIMING_CONSTANTS = {
+    TRANSITION_DURATION_MS: 300,
+    RETRY_DELAY_MS: 500,
+    IMAGE_LOAD_TIMEOUT_MS: 2000,
+    LANGUAGE_LOAD_TIMEOUT_MS: 2000,
+    CONFIG_REINIT_DELAY_MS: 100
+};
+
+/**
+ * Current year constant (memoized to avoid repeated Date calculations)
+ * @constant {number} CURRENT_YEAR
+ */
+const CURRENT_YEAR = new Date().getFullYear();
+
+/**
  * Main configuration object containing all settings for the ticket frontend.
  * Manages API URLs, UI behavior, security policies, debug options, and system settings.
  * 

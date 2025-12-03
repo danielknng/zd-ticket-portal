@@ -300,9 +300,13 @@ async function nfCreateTicket(subject, body, files, requestType) {
             }
         };
 
-        // Attach custom request type if provided
-        if (requestType && typeof requestType === 'string') {
-            ticketData.type = requestType;
+        // Attach custom request type ("Anfrageart") if provided
+        // Zammad expects the string value from the custom object attribute (e.g., "problem", "general_request")
+        if (requestType && typeof requestType === 'string' && requestType.trim() !== '') {
+            ticketData.type = requestType.trim();
+            if (typeof nfLogger !== 'undefined') {
+                nfLogger.debug('Including request type in ticket creation', { requestType: ticketData.type });
+            }
         }
         
         const response = await nfApiPost(`${ZAMMAD_API_URL()}/tickets`, ticketData, {
@@ -459,10 +463,12 @@ async function nfFetchRequestTypes() {
     let options = [];
     // Check if the data option is an array
     if (Array.isArray(dataOption.options)) {
+        // Zammad expects the string value (e.g., "problem", "general_request") as the database key
+        // The "name" field is the display label, "value" is what we send to the API
         options = dataOption.options
-            .map(opt => ({
-                value: String(opt.value ?? opt.name ?? ''),
-                label: String(opt.label ?? opt.name ?? opt.value ?? '')
+            .map((opt) => ({
+                value: String(opt.value ?? ''),  // Database key: "problem", "general_request", etc.
+                label: String(opt.name ?? opt.value ?? '')  // Display label
             }))
             .filter(o => o.value);
     } else if (dataOption.options && typeof dataOption.options === 'object') {

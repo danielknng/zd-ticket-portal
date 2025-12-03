@@ -41,9 +41,16 @@ export async function handleNewTicketSubmit(e) {
                 }
             }
         }
-        window.nfLogger.info('Creating ticket', { subject, hasFiles: files.length > 0 });
+        window.nfLogger.info('Creating ticket', { 
+            subject, 
+            hasFiles: files && files.length > 0,
+            requestType: requestType || 'none'
+        });
         
-        const effectiveRequestType = (NF_CONFIG.api?.allowRequestType && requestType) ? requestType : undefined;
+        // Only include request type if it's enabled and a valid value is selected
+        const effectiveRequestType = (NF_CONFIG.api?.allowRequestType && requestType && requestType.trim() !== '') 
+            ? requestType.trim() 
+            : undefined;
 
         await nfCreateTicket(subject, body, files, effectiveRequestType);
         nfShowStatus(window.nfGetMessage('ticketCreated'), 'success', 'newticket');

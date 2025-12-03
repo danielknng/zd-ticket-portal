@@ -1076,6 +1076,172 @@ export const StyleUtils = {
 
 ---
 
+#### 31. **Placeholder Replacement in Language Manager (DUPLICATED 4 times)**
+**Problem**: Same placeholder replacement logic in `nf-lang.js` (getLabel, getAriaLabel, getMessage, getUtilsMessage)
+```javascript
+// DUPLICATED 4 times in nf-lang.js:
+if (Object.keys(placeholders).length > 0) {
+    Object.entries(placeholders).forEach(([placeholder, replacement]) => {
+        value = value.replace(`{${placeholder}}`, replacement);
+    });
+}
+```
+
+**Solution**: Extract to private method
+```javascript
+// nf-lang.js
+_replacePlaceholders(value, placeholders) {
+    if (typeof value !== 'string' || Object.keys(placeholders).length === 0) return value;
+    return Object.entries(placeholders).reduce((str, [key, val]) => 
+        str.replace(`{${key}}`, val), value);
+}
+```
+
+#### 32. **File Preview Functions (DUPLICATED - Almost Identical)**
+**Problem**: `nfUpdateFilePreview` and `nfUpdateReplyFilePreview` are 95% identical, same with clear functions
+```javascript
+// DUPLICATED in nf-file-upload.js:
+export function nfUpdateFilePreview() {
+    const files = nf.newTicketAttachment?.files;
+    const previewList = nf.filePreviewList;
+    // ... 20 lines of identical code
+}
+
+export function nfUpdateReplyFilePreview() {
+    const files = nf.ticketDetailAttachment?.files;
+    const previewList = nf.ticketDetailFilePreviewList;
+    // ... 20 lines of identical code
+}
+```
+
+**Solution**: Generic function with context parameter
+```javascript
+// nf-file-upload.js
+function _updateFilePreview(files, previewList, previewContainer, removeCallback) {
+    if (!previewList || !previewContainer) return;
+    previewList.innerHTML = '';
+    if (!files || files.length === 0) {
+        previewContainer.style.display = 'none';
+        return;
+    }
+    previewContainer.style.display = 'block';
+    Array.from(files).forEach((file, index) => {
+        const previewItem = nfCreateFilePreviewItem(file, index, removeCallback);
+        if (previewItem) previewList.appendChild(previewItem);
+    });
+}
+
+export function nfUpdateFilePreview() {
+    _updateFilePreview(
+        nf.newTicketAttachment?.files,
+        nf.filePreviewList,
+        nf.filePreviewContainer,
+        nfRemoveFileFromPreview
+    );
+}
+
+export function nfUpdateReplyFilePreview() {
+    _updateFilePreview(
+        nf.ticketDetailAttachment?.files,
+        nf.ticketDetailFilePreviewList,
+        nf.ticketDetailFilePreview,
+        nfRemoveReplyFileFromPreview
+    );
+}
+```
+
+#### 33. **UI Initialization Pattern (DUPLICATED 36+ times)**
+**Problem**: Repetitive element querying and text setting in `nf-ui-init.js`
+```javascript
+// DUPLICATED 36+ times:
+const element = document.querySelector('.some-class');
+if (element && labels.someKey) {
+    element.textContent = labels.someKey;
+}
+```
+
+**Solution**: Helper function
+```javascript
+// nf-ui-init.js
+function _setElementText(selector, text, element = null) {
+    const el = element || document.querySelector(selector);
+    if (el && text) el.textContent = text;
+}
+
+function _setElementPlaceholder(selector, text, element = null) {
+    const el = element || document.querySelector(selector);
+    if (el && text) el.placeholder = text;
+}
+
+// Usage:
+_setElementText('.nf-newticket-title', labels.newTicketTitle);
+_setElementPlaceholder('#nf_new_ticket_subject', labels.newTicketLabels.subjectPlaceholder);
+```
+
+#### 34. **Cache localStorage Access Pattern (DUPLICATED 18 times)**
+**Problem**: Same `typeof NFUtils !== 'undefined'` check pattern in `nf-cache.js`
+```javascript
+// DUPLICATED 18 times in nf-cache.js:
+if (typeof NFUtils !== 'undefined' && NFUtils.storage) {
+    NFUtils.storage.set(this.localStoragePrefix + key, data);
+} else {
+    try {
+        localStorage.setItem(this.localStoragePrefix + key, JSON.stringify(data));
+    } catch (e) {}
+}
+```
+
+**Solution**: Extract to helper methods
+```javascript
+// nf-cache.js
+_setLocalStorage(key, value) {
+    if (typeof NFUtils !== 'undefined' && NFUtils.storage) {
+        NFUtils.storage.set(key, value);
+    } else {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {}
+    }
+}
+
+_getLocalStorage(key) {
+    if (typeof NFUtils !== 'undefined' && NFUtils.storage) {
+        return NFUtils.storage.get(key);
+    } else {
+        try {
+            return JSON.parse(localStorage.getItem(key));
+        } catch (e) {
+            return null;
+        }
+    }
+}
+```
+
+#### 35. **Language Data Access Pattern (DUPLICATED 4 times)**
+**Problem**: Same language data check in `nf-lang.js`
+```javascript
+// DUPLICATED 4 times:
+const langData = this.languages[this.currentLanguage];
+if (!langData) {
+    console.warn(`Language '${this.currentLanguage}' not loaded`);
+    return key;
+}
+```
+
+**Solution**: Extract to private method
+```javascript
+// nf-lang.js
+_getCurrentLangData() {
+    const langData = this.languages[this.currentLanguage];
+    if (!langData) {
+        console.warn(`Language '${this.currentLanguage}' not loaded`);
+    }
+    return langData;
+}
+```
+
+---
+
 ### Critical Duplications Found
 
 #### 1. **Input Validation (DUPLICATED 20+ times)**
@@ -1393,14 +1559,14 @@ export class ResponseHandler {
 
 ### Current State
 - **Total Lines**: ~8,000+ lines
-- **Duplicated Patterns**: ~900+ instances (final comprehensive count)
+- **Duplicated Patterns**: ~1,000+ instances (updated final count)
 - **Functions**: 148 functions
 - **DOM Queries**: 197 instances
-- **Typeof Checks**: 294 instances
+- **Typeof Checks**: 279 instances (updated)
 - **Logger Checks**: 135 instances
 - **Date Formatting**: 15+ instances
 - **Response Checks**: 22 instances
-- **Form Data Extraction**: 10+ instances
+- **Form Data Extraction**: 71 instances (updated)
 - **Empty/Null Checks**: 50+ instances
 - **Config Access**: 69 inconsistent patterns
 - **DOM Creation**: 40+ instances
@@ -1413,11 +1579,16 @@ export class ResponseHandler {
 - **Element Validation**: 20+ instances
 - **Image Loading**: 5+ instances
 - **Style Manipulation**: 27 instances
+- **Placeholder Replacement**: 4 instances (NEW)
+- **File Preview Functions**: 2 nearly identical functions (NEW)
+- **UI Init Patterns**: 36+ instances (NEW)
+- **Cache localStorage**: 18 instances (NEW)
+- **Language Data Access**: 4 instances (NEW)
 
 ### After Refactoring
-- **Total Lines**: ~4,000 lines (50% reduction - outstanding!)
+- **Total Lines**: ~3,800 lines (52% reduction - excellent!)
 - **Duplicated Patterns**: 0 instances
-- **Functions**: ~80 functions (consolidated)
+- **Functions**: ~75 functions (consolidated)
 - **DOM Queries**: Centralized manager
 - **Typeof Checks**: Safe access utilities
 - **All Patterns**: Centralized utilities
@@ -1459,6 +1630,11 @@ export class ResponseHandler {
 26. ✅ **Element Validator** - Eliminate 20+ validation pattern duplications
 27. ✅ **Image Loader** - Eliminate 5+ image loading promise duplications
 28. ✅ **Style Utils** - Eliminate 27 style manipulation duplications
+29. ✅ **Language Placeholders** - Eliminate 4 placeholder replacement duplications in nf-lang.js
+30. ✅ **File Preview Consolidation** - Merge nearly identical file preview functions
+31. ✅ **UI Init Helpers** - Eliminate 36+ repetitive UI initialization patterns
+32. ✅ **Cache Storage Helpers** - Eliminate 18 localStorage access duplications
+33. ✅ **Language Data Helper** - Eliminate 4 language data access duplications
 
 ---
 

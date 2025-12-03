@@ -40,20 +40,18 @@ function getApiClient() {
 
 /**
  * Helper function to get user token from state management
- * Falls back to nf.userToken for backward compatibility
  * @returns {string|null} User authentication token
  */
 function getUserToken() {
-    return appState.get('userToken') || nf.userToken;
+    return appState.get('userToken');
 }
 
 /**
  * Helper function to get user ID from state management
- * Falls back to nf.userId for backward compatibility
  * @returns {number|string|null} User ID
  */
 function getUserId() {
-    return appState.get('userId') || nf.userId;
+    return appState.get('userId');
 }
 
 /**
@@ -148,12 +146,11 @@ async function nfAuthenticateUser(username, password) {
             isAccountLocked: false
         });
         
+        // Update API client with new token
+        getApiClient().setAuthToken(credentials);
+        
         // Emit login success event
         nfEventBus.emit('login:success', { userId: userData.id, userData });
-        
-        // Backward compatibility: also set on nf object for legacy code
-        nf.userToken = credentials;
-        nf.userId = userData.id;
         
         if (typeof NFUtils !== 'undefined' && NFUtils.storage) {
             NFUtils.storage.set('nf_session', {

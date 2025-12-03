@@ -299,8 +299,8 @@ function handleLoginError(error) {
 }
 
 function nfRequireLogin(next) {
-    const userToken = appState.get('userToken') || nf.userToken;
-    const userId = appState.get('userId') || nf.userId;
+    const userToken = appState.get('userToken');
+    const userId = appState.get('userId');
     if (userToken && userId) { next(); return; }
     nfShowLogin();
     nfCleanupLoginHandlers();

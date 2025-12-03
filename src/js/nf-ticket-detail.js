@@ -368,7 +368,7 @@ async function nfFetchUserNameById(userId) {
     
     const response = await nfApiGet(url, {
         headers: {
-            'Authorization': `Basic ${appState.get('userToken') || nf.userToken}`  // Use stored authentication
+            'Authorization': `Basic ${appState.get('userToken')}`  // Use stored authentication
         }
     });
     
@@ -450,7 +450,7 @@ function nfRenderAttachments(attachments, container) {
                         throw new Error('No attachment URL available');
                     }
                     const response = await nfApiGet(attachmentUrl, {
-                        headers: { 'Authorization': `Basic ${appState.get('userToken') || nf.userToken}` }
+                        headers: { 'Authorization': `Basic ${appState.get('userToken')}` }
                     });
                     if (response.ok) {
                         const blob = await response.blob();

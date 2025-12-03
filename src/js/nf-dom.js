@@ -37,14 +37,6 @@ const ZAMMAD_API_URL = () => {
  * @property {Object} templates - HTML templates for dynamic content generation
  */
 const nf = {
-    /**
-     * Authentication state properties
-     * @namespace nf.auth
-     * @property {string|null} userToken - JWT token for API authentication
-     * @property {string|null} userId - Unique user identifier for permissions
-     */
-    userToken: null, // JWT token after successful login - used for API requests
-    userId: null,    // Unique user ID after successful login - for permissions
     
     /**
      * Main UI container elements

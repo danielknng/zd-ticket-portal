@@ -117,7 +117,7 @@ function nfInitializeFilters() {
                     statusCategory: nfCurrentFilters.statusCategory,
                     year: nfCurrentFilters.year,
                     sortOrder: nfCurrentFilters.sortOrder,
-                    userId: nf.userId,
+                    userId: appState.get('userId'),
                     timestamp: new Date().toISOString()
                 });
             }
@@ -323,7 +323,7 @@ function nfRenderTicketList(tickets) {
 function nfInvalidateCurrentTicketCaches() {
     // Only invalidate current year caches (archived tickets shouldn't be refreshed)
     if (nfCurrentFilters.year === CURRENT_YEAR && typeof window.nfCache !== 'undefined') {
-        const cacheKey = `tickets_${nfCurrentFilters.statusCategory}_${nfCurrentFilters.year}_${appState.get('userId') || nf.userId}`;
+        const cacheKey = `tickets_${nfCurrentFilters.statusCategory}_${nfCurrentFilters.year}_${appState.get('userId')}`;
         
         // Invalidate ticket list cache for current context
         window.nfCache.invalidate(cacheKey);

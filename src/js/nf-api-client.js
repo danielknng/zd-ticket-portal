@@ -5,10 +5,9 @@
  * @since 2025-07-15
  * @version 1.0.0
  * 
- * @note This is a future architecture improvement. The existing codebase uses
- *       the functions in nf-api.js. This client class provides a unified
- *       interface for future refactoring. It is not currently integrated
- *       into the application but is available for gradual migration.
+ * @note This API client is now actively used by nf-api.js for all API operations.
+ *       The nf-api.js functions serve as wrappers that add caching, event bus,
+ *       and performance measurement on top of this client.
  */
 
 import { nfApiGet, nfApiPost, nfApiPut, getAuthHeaders, createApiError } from './nf-api-utils.js';
@@ -390,11 +389,7 @@ class ZammadApiClient {
      * @returns {number|string|null} User ID
      */
     _getUserId() {
-        // Try to get from global state
-        if (typeof window !== 'undefined' && window.nf && window.nf.userId) {
-            return window.nf.userId;
-        }
-        // Try to get from appState if available
+        // Get from appState
         if (typeof window !== 'undefined' && window.appState) {
             return window.appState.get('userId');
         }

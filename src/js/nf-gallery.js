@@ -156,7 +156,7 @@ async function nfLoadAuthenticatedImage(imageUrl) {
         // Use nfApiFetch to get the raw response for binary data
         const response = await nfApiFetch(imageUrl, {
             method: 'GET',
-            headers: { 'Authorization': `Basic ${appState.get('userToken') || nf.userToken}` },
+            headers: { 'Authorization': `Basic ${appState.get('userToken')}` },
         });
         // nfApiFetch returns parsed JSON or text, but for images we need the raw response
         // If response is not a Response object, fallback:

@@ -7,6 +7,19 @@
  */
 
 /**
+ * Array of all modal container IDs used throughout the application
+ * @constant {Array<string>}
+ */
+const MODAL_IDS = [
+    'nf_modal_overlay',
+    'nf_ticketlist_container',
+    'nf_ticketdetail_container',
+    'nf_gallery_overlay',
+    'nf_login_container',
+    'nf_new_ticket_container'
+];
+
+/**
  * Modal management object providing centralized modal functionality.
  * Handles opening, closing, blur effects, focus trapping, and accessibility.
  * 
@@ -95,15 +108,7 @@ const nfModal = {
     blurBackground(modal) {
         // Blur all background modal layers except the topmost
         const currentModalId = modal.id;
-        const ids = [
-            'nf_modal_overlay',
-            'nf_ticketlist_container',
-            'nf_ticketdetail_container',
-            'nf_gallery_overlay',
-            'nf_login_container',
-            'nf_new_ticket_container'
-        ];
-        ids.forEach(id => {
+        MODAL_IDS.forEach(id => {
             const el = document.getElementById(id);
             // Only blur elements that exist and are not the current modal
             if (el && id !== currentModalId) {
@@ -117,15 +122,7 @@ const nfModal = {
      * @param {HTMLElement} modal
      */
     unblurBackground(modal) {
-        const ids = [
-            'nf_modal_overlay',
-            'nf_ticketlist_container',
-            'nf_ticketdetail_container',
-            'nf_gallery_overlay',
-            'nf_login_container',
-            'nf_new_ticket_container'
-        ];
-        ids.forEach(id => {
+        MODAL_IDS.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.classList.remove('nf-blur-bg');
@@ -138,15 +135,7 @@ const nfModal = {
      * @param {string} modalId
      */
     setAriaHiddenExcept(modalId) {
-        const ids = [
-            'nf_modal_overlay',
-            'nf_ticketlist_container',
-            'nf_ticketdetail_container',
-            'nf_gallery_overlay',
-            'nf_login_container',
-            'nf_new_ticket_container'
-        ];
-        ids.forEach(id => {
+        MODAL_IDS.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 if (id === modalId) {
@@ -166,15 +155,7 @@ const nfModal = {
      * @param {string|null} modalId
      */
     setInertExcept(modalId) {
-        const ids = [
-            'nf_modal_overlay',
-            'nf_ticketlist_container',
-            'nf_ticketdetail_container',
-            'nf_gallery_overlay',
-            'nf_login_container',
-            'nf_new_ticket_container'
-        ];
-        ids.forEach(id => {
+        MODAL_IDS.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 if (modalId && id === modalId) {

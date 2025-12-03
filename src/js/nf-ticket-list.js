@@ -8,12 +8,18 @@
 
 import { NF_CONFIG } from './nf-config.js';
 import { nf } from './nf-dom.js';
-import { nfSetLoading } from './nf-helpers.js';
+import { nfSetLoading, nfStateLabel } from './nf-helpers.js';
 import { nfShow, nfHide } from './nf-helpers.js';
 import { nfShowStatus } from './nf-status.js';
 import { nfFetchTicketsFiltered } from './nf-api.js';
 import { nfShowTicketList, nfShowTicketDetail } from './nf-ui.js';
 import { nfShowTicketDetailView } from './nf-ticket-detail.js';
+
+/**
+ * Memoized current year to avoid repeated Date calculations
+ * @type {number}
+ */
+const CURRENT_YEAR = new Date().getFullYear();
 
 /**
  * Global filter state for ticket list display
@@ -24,7 +30,7 @@ import { nfShowTicketDetailView } from './nf-ticket-detail.js';
  */
 let nfCurrentFilters = {
     statusCategory: 'active',  // Default: Only active tickets
-    year: new Date().getFullYear(),
+    year: CURRENT_YEAR,
     sortOrder: 'date_desc'
 };
 
@@ -80,9 +86,9 @@ function nfInitializeFilters() {
     if (!statusFilter || !sortFilter || !yearFilter) return;
     
     const availableYears = NF_CONFIG?.ui?.filters?.availableYears || [
-        new Date().getFullYear(),
-        new Date().getFullYear() - 1,
-        new Date().getFullYear() - 2
+        CURRENT_YEAR,
+        CURRENT_YEAR - 1,
+        CURRENT_YEAR - 2
     ];
     yearFilter.innerHTML = '';
     availableYears.forEach(year => {
@@ -213,22 +219,6 @@ async function nfReloadTicketsWithFilters() {
     }
 }
 
-/**
- * Maps a ticket state ID or name to a readable status label using NF_CONFIG and current language
- */
-function nfStateLabel(state) {
-    const ticketStates = window.nfLang.getSystemData('ticketStates');
-    // State can be a number or string (id or name)
-    if (typeof state === 'number' && ticketStates[state]) return ticketStates[state];
-    if (typeof state === 'string') {
-        // Try as number string
-        if (ticketStates[Number(state)]) return ticketStates[Number(state)];
-        // Try as lowercased string key
-        if (ticketStates[state.toLowerCase()]) return ticketStates[state.toLowerCase()];
-    }
-    // No fallback: always defined in config
-    return '';
-}
 
 /**
  * Renders the ticket list into the table
@@ -246,6 +236,9 @@ function nfRenderTicketList(tickets) {
     }
     
     const ticketRowTemplate = nf.templates.ticketListRow;
+    
+    // Use DocumentFragment for batch DOM operations to minimize reflows
+    const fragment = document.createDocumentFragment();
     
     tickets.forEach((t) => {
         let tr;  // Table row for current ticket
@@ -315,8 +308,11 @@ function nfRenderTicketList(tickets) {
             });
         }
         
-        nf.ticketListBody.appendChild(tr);  // Add row to ticket table
+        fragment.appendChild(tr);  // Add row to fragment instead of directly to DOM
     });
+    
+    // Append all rows at once to minimize reflows
+    nf.ticketListBody.appendChild(fragment);
 }
 
 /**
@@ -324,10 +320,8 @@ function nfRenderTicketList(tickets) {
  * Only invalidates current year tickets (active/closed), not archived
  */
 function nfInvalidateCurrentTicketCaches() {
-    const currentYear = new Date().getFullYear();
-    
     // Only invalidate current year caches (archived tickets shouldn't be refreshed)
-    if (nfCurrentFilters.year === currentYear && typeof window.nfCache !== 'undefined') {
+    if (nfCurrentFilters.year === CURRENT_YEAR && typeof window.nfCache !== 'undefined') {
         const cacheKey = `tickets_${nfCurrentFilters.statusCategory}_${nfCurrentFilters.year}_${nf.userId}`;
         
         // Invalidate ticket list cache for current context

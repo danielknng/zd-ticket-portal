@@ -7,11 +7,22 @@
  */
 
 /**
- * Returns the base URL for the Zammad API from configuration
+ * Memoized API base URL to avoid repeated config lookups
+ * @type {string|undefined}
+ */
+let _cachedApiUrl = undefined;
+
+/**
+ * Returns the base URL for the Zammad API from configuration (memoized)
  * @function ZAMMAD_API_URL
  * @returns {string|undefined} The API base URL or undefined if config not loaded
  */
-const ZAMMAD_API_URL = () => window.NF_CONFIG?.api?.baseUrl;
+const ZAMMAD_API_URL = () => {
+    if (_cachedApiUrl === undefined) {
+        _cachedApiUrl = window.NF_CONFIG?.api?.baseUrl;
+    }
+    return _cachedApiUrl;
+};
 
 /**
  * Central DOM object containing all UI element references and application state.

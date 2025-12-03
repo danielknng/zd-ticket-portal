@@ -125,7 +125,7 @@ const NF_CONFIG = {
         statusMessageDuration: 4000,
         searchMinLength: 2,
         maxSearchResults: 10,
-        debounceTimeout: 300,
+        debounceTimeout: TIMING_CONSTANTS.TRANSITION_DURATION_MS,
 
         // Login settings
         login: {
@@ -157,11 +157,11 @@ const NF_CONFIG = {
             },
             defaultStatusFilter: 'active',
             defaultSortOrder: 'date_desc',
-            defaultYear: new Date().getFullYear(),
+            defaultYear: CURRENT_YEAR,
             availableYears: [
-                new Date().getFullYear(),
-                new Date().getFullYear() - 1,
-                new Date().getFullYear() - 2
+                CURRENT_YEAR,
+                CURRENT_YEAR - 1,
+                CURRENT_YEAR - 2
             ],
             // Allowed request types to show in the dropdown (optional)
             // If not specified or empty, all available request types will be shown
@@ -279,7 +279,7 @@ if (typeof window.nfReinitializeLogger === 'function') {
         if (typeof window.nfReinitializeLogger === 'function') {
             window.nfReinitializeLogger();
         }
-    }, 100);
+        }, TIMING_CONSTANTS.CONFIG_REINIT_DELAY_MS);
 }
 
 // Initialize language manager
@@ -295,4 +295,4 @@ if (typeof window !== 'undefined') {
     });
 }
 
-export { NF_CONFIG };
+export { NF_CONFIG, TIMING_CONSTANTS };

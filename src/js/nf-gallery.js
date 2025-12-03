@@ -7,7 +7,7 @@
  */
 
 import { nfApiGet, nfApiFetch } from './nf-api-utils.js';
-import { NF_CONFIG } from './nf-config.js';
+import { NF_CONFIG, TIMING_CONSTANTS } from './nf-config.js';
 import { nf } from './nf-dom.js';
 import { nfShow, nfHide, nfSetLoading } from './nf-helpers.js';
 import nfModal from './nf-modal.js';
@@ -81,8 +81,14 @@ function nfCloseGallery() {
     // Restore body scroll immediately
     document.body.style.overflow = '';
     
-    // Wait for transition to complete, then manually close and restore ticket detail state
-    setTimeout(() => {
+    // Wait for transition to complete using transitionend event
+    const handleTransitionEnd = (e) => {
+        // Only handle transition on the overlay element itself, not children
+        if (e.target !== overlay) return;
+        
+        // Remove the event listener after first use
+        overlay.removeEventListener('transitionend', handleTransitionEnd);
+        
         // Manually close gallery without using modal system to preserve other modal states
         overlay.classList.add('nf-hidden');
         overlay.setAttribute('aria-hidden', 'true');
@@ -121,7 +127,18 @@ function nfCloseGallery() {
         
         nfCleanupGalleryEvents();
         window.nfLogger.debug('Gallery closed and cleaned up');
-    }, 300); // Match CSS transition duration
+    };
+    
+    // Listen for transition end event
+    overlay.addEventListener('transitionend', handleTransitionEnd, { once: true });
+    
+    // Fallback timeout in case transition event doesn't fire (e.g., no transition defined)
+    setTimeout(() => {
+        // Check if transition already completed
+        if (!overlay.classList.contains('nf-gallery-active') && !overlay.classList.contains('nf-hidden')) {
+            handleTransitionEnd({ target: overlay });
+        }
+    }, TIMING_CONSTANTS.TRANSITION_DURATION_MS); // Match CSS transition duration
 }
 
 // Make nfCloseGallery available globally for the main keyboard handler
@@ -183,7 +200,7 @@ async function nfDisplayCurrentImage() {
             await new Promise((resolve, reject) => {
                 image.onload = resolve;
                 image.onerror = reject;
-                setTimeout(resolve, 2000);
+                setTimeout(resolve, TIMING_CONSTANTS.IMAGE_LOAD_TIMEOUT_MS);
             });
         } catch (fallbackError) {
             window.nfLogger.warn('Image could not be loaded', fallbackError);

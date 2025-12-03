@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { nfApiFetch, nfApiGet, nfApiPost, nfApiPut } from './nf-api-utils.js';
+import { nfApiFetch, nfApiGet, nfApiPost, nfApiPut, createApiError } from './nf-api-utils.js';
 import { ZAMMAD_API_URL, nf } from './nf-dom.js';
 import { nfFileToBase64 } from './nf-file-upload.js';
 
@@ -19,6 +19,14 @@ import { nfFileToBase64 } from './nf-file-upload.js';
  * @returns {Promise<Object>} User data object from Zammad or throws error
  */
 async function nfAuthenticateUser(username, password) {
+    // Input validation
+    if (!username || typeof username !== 'string') {
+        throw createApiError('Username is required and must be a string', 'INVALID_USERNAME');
+    }
+    if (!password || typeof password !== 'string') {
+        throw createApiError('Password is required and must be a string', 'INVALID_PASSWORD');
+    }
+    
     if (typeof nfPerf !== 'undefined' && window.NF_CONFIG?.debug?.enabled) {
         nfPerf.mark('auth-start');
     }
@@ -32,11 +40,7 @@ async function nfAuthenticateUser(username, password) {
         if (!cleanUsername || !cleanPassword) {
             nfLogger.error('Missing credentials', { cleanUsername, cleanPassword });
             const errorMessage = nfGetMessage('missingCredentials');
-            if (typeof NFError !== 'undefined') {
-                throw new NFError(errorMessage, 'MISSING_CREDENTIALS');
-            } else {
-                throw new Error(errorMessage);
-            }
+            throw createApiError(errorMessage, 'MISSING_CREDENTIALS');
         }
         
         const authString = `${cleanUsername}:${cleanPassword}`;
@@ -68,35 +72,20 @@ async function nfAuthenticateUser(username, password) {
                 if (nf._loginAttempts >= maxAttempts) {
                     nf._isAccountLocked = true;
                     const lockoutMessage = nfGetMessage('lockoutMessage');
-                    const errorMessage = lockoutMessage;
-                    if (typeof NFError !== 'undefined') {
-                        throw new NFError(errorMessage, 'ACCOUNT_LOCKED');
-                    } else {
-                        throw new Error(errorMessage);
-                    }
+                    throw createApiError(lockoutMessage, 'ACCOUNT_LOCKED');
                 }
                 
                 // 401 = Unauthorized - invalid credentials
                 // Simplified: no remaining attempts, just a generic warning
                 const errorMessage = nfGetMessage('invalidCredentials');
                 const warningMessage = nfGetMessage('attemptsWarning');
-                if (typeof NFError !== 'undefined') {
-                    const error = new NFError(errorMessage, 'INVALID_CREDENTIALS');
-                    error.attemptsWarning = warningMessage;
-                    throw error;
-                } else {
-                    const error = new Error(errorMessage);
-                    error.attemptsWarning = warningMessage;
-                    throw error;
-                }
+                const error = createApiError(errorMessage, 'INVALID_CREDENTIALS');
+                error.attemptsWarning = warningMessage;
+                throw error;
             }
             // Other HTTP errors (500, 503, etc.)
             const errorMessage = nfGetMessage('authFailed', undefined, { status: response.status });
-            if (typeof NFError !== 'undefined') {
-                throw new NFError(errorMessage, 'AUTH_FAILED');
-            } else {
-                throw new Error(errorMessage);
-            }
+            throw createApiError(errorMessage, 'AUTH_FAILED', { status: response.status });
         }
         
         const userData = await response.json();
@@ -170,7 +159,9 @@ async function nfFetchTicketDetail(ticketId) {
             }
         });
         
-        if (!ticketResponse.ok) throw new Error('Error loading ticket details');
+        if (!ticketResponse.ok) {
+            throw createApiError('Error loading ticket details', 'TICKET_FETCH_FAILED', { status: ticketResponse.status });
+        }
         
         const ticket = await ticketResponse.json();
         
@@ -181,7 +172,9 @@ async function nfFetchTicketDetail(ticketId) {
             }
         });
         
-        if (!articlesResponse.ok) throw new Error('Error loading ticket articles');
+        if (!articlesResponse.ok) {
+            throw createApiError('Error loading ticket articles', 'ARTICLES_FETCH_FAILED', { status: articlesResponse.status });
+        }
         
         const articles = await articlesResponse.json();
         ticket.articles = articles;
@@ -194,7 +187,6 @@ async function nfFetchTicketDetail(ticketId) {
         
         if (typeof nfCache !== 'undefined') {
             const ticketYear = new Date(ticket.created_at).getFullYear();
-            const currentYear = new Date().getFullYear();
             const ticketStateId = ticket.state_id;
             
             // Get closed state IDs from config
@@ -205,7 +197,7 @@ async function nfFetchTicketDetail(ticketId) {
             let cacheDescription;
             let cacheReason;
             
-            if (ticketYear < currentYear) {
+            if (ticketYear < CURRENT_YEAR) {
                 // Archived tickets (any status): long cache
                 cacheTTL = window.NF_CONFIG.ui.cache.archivedTicketDetailTTL;
                 cacheDescription = 'long-term (archived)';
@@ -272,8 +264,21 @@ async function nfFetchTicketDetail(ticketId) {
  * @returns {Promise<Object>} The created ticket object or throws error
  */
 async function nfCreateTicket(subject, body, files, requestType) {
+    // Input validation
+    if (!subject || typeof subject !== 'string' || !subject.trim()) {
+        throw createApiError('Subject is required and must be a non-empty string', 'INVALID_SUBJECT');
+    }
+    if (!body || typeof body !== 'string' || !body.trim()) {
+        throw createApiError('Message body is required and must be a non-empty string', 'INVALID_BODY');
+    }
+    if (files && !Array.isArray(files) && !(files instanceof FileList)) {
+        throw createApiError('Files must be an array or FileList', 'INVALID_FILES');
+    }
+    if (requestType !== undefined && (typeof requestType !== 'string' || !requestType.trim())) {
+        throw createApiError('Request type must be a non-empty string if provided', 'INVALID_REQUEST_TYPE');
+    }
+    
     try {
-        if (!subject || !body) throw new Error('Subject and message are required');
         
         let attachments = [];
         if (files && files.length > 0) {
@@ -316,7 +321,9 @@ async function nfCreateTicket(subject, body, files, requestType) {
             }
         });
         
-        if (!response.ok) throw new Error('Error creating ticket');
+        if (!response.ok) {
+            throw createApiError('Error creating ticket', 'TICKET_CREATE_FAILED', { status: response.status });
+        }
         
         return await response.json();  // Return created ticket object
     } catch (error) {
@@ -334,6 +341,17 @@ async function nfCreateTicket(subject, body, files, requestType) {
  * @returns {Promise<Object>} Updated ticket object or throws error
  */
 async function nfSendReply(ticketId, text, files) {
+    // Input validation
+    if (!ticketId || (typeof ticketId !== 'number' && typeof ticketId !== 'string')) {
+        throw createApiError('Ticket ID is required and must be a number or string', 'INVALID_TICKET_ID');
+    }
+    if (!text || typeof text !== 'string' || !text.trim()) {
+        throw createApiError('Reply text is required and must be a non-empty string', 'INVALID_REPLY_TEXT');
+    }
+    if (files && !Array.isArray(files) && !(files instanceof FileList)) {
+        throw createApiError('Files must be an array or FileList', 'INVALID_FILES');
+    }
+    
     try {
         const articleData = {
             ticket_id: ticketId,
@@ -349,7 +367,9 @@ async function nfSendReply(ticketId, text, files) {
             }
         });
         
-        if (!response.ok) throw new Error('Error creating reply');
+        if (!response.ok) {
+            throw createApiError('Error creating reply', 'REPLY_CREATE_FAILED', { status: response.status });
+        }
         
         if (files && files.length > 0) {
             for (const file of files) {
@@ -383,6 +403,10 @@ async function nfSendReply(ticketId, text, files) {
  * @returns {Promise<Object>} Updated ticket object or throws error
  */
 async function nfCloseTicket(ticketId) {
+    // Input validation
+    if (!ticketId || (typeof ticketId !== 'number' && typeof ticketId !== 'string')) {
+        throw createApiError('Ticket ID is required and must be a number or string', 'INVALID_TICKET_ID');
+    }
     try {
         const response = await nfApiPut(`${ZAMMAD_API_URL()}/tickets/${ticketId}`, { state_id: 4 }, {
             headers: {
@@ -391,7 +415,9 @@ async function nfCloseTicket(ticketId) {
             }
         });
         
-        if (!response.ok) throw new Error('Error closing ticket');
+        if (!response.ok) {
+            throw createApiError('Error closing ticket', 'TICKET_CLOSE_FAILED', { status: response.status });
+        }
         
         return await response.json();  // Return updated ticket object
     } catch (error) {
@@ -405,8 +431,6 @@ async function nfCloseTicket(ticketId) {
  * @returns {Promise<{ options: Array<{value: string, label: string}>, defaultValue: string | null }>} 
  *          Object containing selectable request types and the Zammad default value
  */
-let nfRequestTypesCache = null;
-
 async function nfFetchRequestTypes() {
     const baseUrl = ZAMMAD_API_URL();
     if (!baseUrl) {
@@ -415,18 +439,13 @@ async function nfFetchRequestTypes() {
     // Cache key for request types
     const cacheKey = 'ticket_request_types';
 
-    // Try global TTL cache first (configured in NF_CONFIG.ui.cache.requestTypeTTL)
+    // Try global TTL cache (configured in NF_CONFIG.ui.cache.requestTypeTTL)
     const requestTypeTTL = window.NF_CONFIG?.ui?.cache?.requestTypeTTL;
     if (requestTypeTTL && typeof window.nfCache !== 'undefined') {
         const cached = window.nfCache.get(cacheKey);
         if (cached && Array.isArray(cached.options) && cached.options.length > 0) {
-            nfRequestTypesCache = cached;
             return cached;
         }
-    }
-    // Simple in-memory cache as an additional fast path
-    if (nfRequestTypesCache && Array.isArray(nfRequestTypesCache.options) && nfRequestTypesCache.options.length > 0) {
-        return nfRequestTypesCache;
     }
 
     // Fetch request types from Zammad
@@ -507,14 +526,13 @@ async function nfFetchRequestTypes() {
         }
     }
 
-    // Store the request types in the cache
-    nfRequestTypesCache = { options, defaultValue };
     // Store the request types in the cache if configured
+    const result = { options, defaultValue };
     if (requestTypeTTL && typeof window.nfCache !== 'undefined') {
-        window.nfCache.set(cacheKey, nfRequestTypesCache, requestTypeTTL);
+        window.nfCache.set(cacheKey, result, requestTypeTTL);
     }
     // Return the request types
-    return nfRequestTypesCache;
+    return result;
 }
 
 
@@ -531,19 +549,18 @@ async function nfFetchRequestTypes() {
 async function nfFetchTicketsFiltered(filters = {}) {
     const {
         statusCategory = window.NF_CONFIG?.ui?.filters?.defaultStatusFilter || 'active',
-        year = new Date().getFullYear(),
+        year = CURRENT_YEAR,
         sortOrder = window.NF_CONFIG?.ui?.filters?.defaultSortOrder || 'date_desc',
         searchQuery = ''
     } = filters;
     
     const cacheKey = `tickets_${statusCategory}_${year}_${nf.userId}`;
-    const currentYear = new Date().getFullYear();
     
     if (typeof nfCache !== 'undefined') {
         const cached = nfCache.get(cacheKey);
         if (cached) {
             let cacheType;
-            if (year < currentYear) {
+            if (year < CURRENT_YEAR) {
                 cacheType = 'archived';
             } else if (statusCategory === 'closed') {
                 cacheType = 'current year closed';
@@ -557,7 +574,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
                     count: cached.length,
                     statusCategory,
                     year,
-                    currentYear,
+                    currentYear: CURRENT_YEAR,
                     cacheType
                 });
             }
@@ -567,7 +584,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
     
     // For current year tickets or cache miss, fetch from API
     if (typeof nfLogger !== 'undefined') {
-        const cachingStrategy = year < currentYear ? 'archived (will cache)' : 'current year (no cache)';
+        const cachingStrategy = year < CURRENT_YEAR ? 'archived (will cache)' : 'current year (no cache)';
         nfLogger.debug('Fetching filtered tickets', {
             query: searchQuery,
             statusCategory,
@@ -595,7 +612,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
         }
         
         // Add year filter (only for closed tickets or specific years)
-        if (statusCategory === 'closed' && year !== new Date().getFullYear()) {
+        if (statusCategory === 'closed' && year !== CURRENT_YEAR) {
             const yearStart = `${year}-01-01T00:00:00Z`;
             const yearEnd = `${year}-12-31T23:59:59Z`;
             query += ` AND created_at:[${yearStart} TO ${yearEnd}]`;

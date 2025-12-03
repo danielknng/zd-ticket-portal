@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { NF_CONFIG } from './nf-config.js';
+import { NF_CONFIG, TIMING_CONSTANTS } from './nf-config.js';
 
 /**
  * Creates standardized authentication headers for Zammad API requests
@@ -18,6 +18,23 @@ export function getAuthHeaders(token) {
         'Authorization': `Basic ${token}`,
         'Content-Type': 'application/json'
     };
+}
+
+/**
+ * Creates a standardized API error with consistent taxonomy
+ * @param {string} message - Human-readable error message
+ * @param {string} code - Error code (will be prefixed with 'API_')
+ * @param {*} details - Additional error details
+ * @returns {Error|NFError} Error instance (NFError if available, otherwise Error)
+ */
+export function createApiError(message, code, details = null) {
+    if (typeof window !== 'undefined' && window.NFError) {
+        return new window.NFError(message, `API_${code}`, details);
+    }
+    const error = new Error(message);
+    error.code = `API_${code}`;
+    error.details = details;
+    return error;
 }
 
 /**
@@ -43,7 +60,7 @@ export async function nfApiFetch(url, options = {}, retries, timeout) {
         } catch (error) {
             lastError = error;
             if (attempt < retryAttempts) {
-                await new Promise(res => setTimeout(res, 500));
+                await new Promise(res => setTimeout(res, TIMING_CONSTANTS.RETRY_DELAY_MS));
             }
         }
     }

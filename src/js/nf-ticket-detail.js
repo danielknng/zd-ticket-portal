@@ -81,7 +81,7 @@ async function nfShowTicketDetailView(ticketId) {
         }
         
         if (headerTemplate && headerTemplate.firstElementChild) {
-            headerCard = nfCloneTemplate(headerTemplate.firstElementChild, 'div');
+            headerCard = nfCloneTemplate(headerTemplate.firstElementChild);
             window.nfLogger.debug('Cloned headerCard', { headerCard });
             const titleEl = headerCard.querySelector('.nf-ticketdetail-title');
             const statusEl = headerCard.querySelector('.nf-ticketdetail-status');
@@ -161,12 +161,14 @@ async function nfShowTicketDetailView(ticketId) {
         });
         
         // Get template for message display
+        // Use DocumentFragment for batch DOM operations to minimize reflows
+        const messagesFragment = document.createDocumentFragment();
         
         visibleArticles.forEach(article => {
             window.nfLogger.debug('Rendering article', { article });
             let msgDiv;
             if (msgTemplate) {
-                msgDiv = nfCloneTemplate(msgTemplate.firstElementChild, 'div');
+                msgDiv = nfCloneTemplate(msgTemplate.firstElementChild);
                 window.nfLogger.debug('Cloned msgDiv', { msgDiv });
                 msgDiv.className = 'nf-ticketdetail-message ' + 
                     (article.sender_id === 1 ? 'nf-ticketdetail-message--agent' : 'nf-ticketdetail-message--user');
@@ -193,20 +195,44 @@ async function nfShowTicketDetailView(ticketId) {
                     nfRenderAttachments(article.attachments, attDiv);
                 }
             }
-            window.nfLogger.debug('Appending msgDiv to ticketDetailMessages', { msgDiv });
-            nf.ticketDetailMessages.appendChild(msgDiv);
+            window.nfLogger.debug('Appending msgDiv to fragment', { msgDiv });
+            messagesFragment.appendChild(msgDiv);
         });
+        
+        // Append all messages at once to minimize reflows
+        nf.ticketDetailMessages.appendChild(messagesFragment);
         
 
         // Automatically scroll to the end of the message list
-        // With a short delay to ensure all content is loaded
-        setTimeout(() => {
+        // Use requestAnimationFrame to ensure DOM is updated
+        requestAnimationFrame(() => {
             nf.ticketDetailMessages.scrollTop = nf.ticketDetailMessages.scrollHeight;
-        }, 100);
-        // Additional scroll after image loads
-        setTimeout(() => {
-            nf.ticketDetailMessages.scrollTop = nf.ticketDetailMessages.scrollHeight;
-        }, 500);
+        });
+        
+        // Additional scroll after images load using load events
+        const images = nf.ticketDetailMessages.querySelectorAll('img');
+        let imagesLoaded = 0;
+        const totalImages = images.length;
+        
+        if (totalImages > 0) {
+            const scrollAfterImageLoad = () => {
+                imagesLoaded++;
+                if (imagesLoaded === totalImages) {
+                    requestAnimationFrame(() => {
+                        nf.ticketDetailMessages.scrollTop = nf.ticketDetailMessages.scrollHeight;
+                    });
+                }
+            };
+            
+            images.forEach(img => {
+                if (img.complete) {
+                    scrollAfterImageLoad();
+                } else {
+                    img.addEventListener('load', scrollAfterImageLoad, { once: true });
+                    img.addEventListener('error', scrollAfterImageLoad, { once: true });
+                }
+            });
+        }
         
         nfSetupReplyInterface();  // Setup for reply functionality
         
@@ -422,8 +448,7 @@ function nfRenderAttachments(attachments, container) {
                     if (!attachmentUrl) {
                         throw new Error('No attachment URL available');
                     }
-                    const response = await fetch(attachmentUrl, {
-                        method: 'GET',
+                    const response = await nfApiGet(attachmentUrl, {
                         headers: { 'Authorization': `Basic ${nf.userToken}` }
                     });
                     if (response.ok) {

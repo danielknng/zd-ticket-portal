@@ -34,13 +34,22 @@ function nfSetLoading(isLoading) {
 }
 
 /**
- * Converts a ticket state ID to an English label
- * @param {number} stateId - The numeric state ID
- * @returns {string} The English status label
+ * Maps a ticket state ID or name to a readable status label using NF_CONFIG and current language
+ * @param {number|string} state - The state ID (number) or state name (string)
+ * @returns {string} The status label or empty string if not found
  */
-function nfStateLabel(stateId) {
-    const states = window.nfLang.getSystemData('ticketStates');
-    return states[stateId] || window.nfLang.getLabel('unknownStatus');
+function nfStateLabel(state) {
+    const ticketStates = window.nfLang.getSystemData('ticketStates');
+    // State can be a number or string (id or name)
+    if (typeof state === 'number' && ticketStates[state]) return ticketStates[state];
+    if (typeof state === 'string') {
+        // Try as number string
+        if (ticketStates[Number(state)]) return ticketStates[Number(state)];
+        // Try as lowercased string key
+        if (ticketStates[state.toLowerCase()]) return ticketStates[state.toLowerCase()];
+    }
+    // Fallback to unknown status label if available
+    return window.nfLang.getLabel('unknownStatus') || '';
 }
 
 /**

@@ -50,17 +50,16 @@ async function nfSearchKnowledgebase(query) {
             throw new Error('ZAMMAD_API_URL is not defined or returns undefined');
         }
         
-        // Use direct fetch
-        const res = await fetch(`${apiUrl}/knowledge_bases/search`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+        // Use nfApiPost for retry logic and error handling
+        const res = await nfApiPost(
+            `${apiUrl}/knowledge_bases/search`,
+            {
                 knowledge_base_id: kbConfig.id,    // Knowledge base ID from config
                 locale: kbConfig.locale,       // Article language from config
                 query: query,                              // Search term
                 flavor: kbConfig.flavor       // Access mode from config
-            })
-        });
+            }
+        );
         
         if (!res.ok) throw new Error('Search failed');
         
@@ -144,7 +143,7 @@ function nfShowSearchDropdown(resultsRaw, query) {
         
         if (searchResultTemplate) {
             // Template cloning
-            div = nfCloneTemplate(searchResultTemplate.firstElementChild, 'div');  // Use utility for safe cloning
+            div = nfCloneTemplate(searchResultTemplate.firstElementChild);  // Use utility for safe cloning
             
             if (highlights[res.id] && highlights[res.id]["content.title"]) {
                 title = highlights[res.id]["content.title"].join(' ');

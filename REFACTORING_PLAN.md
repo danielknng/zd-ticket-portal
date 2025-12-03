@@ -780,6 +780,150 @@ sizeSpan.textContent = ` (${(attachment.size / 1024).toFixed(1)} KB)`;
 
 **Solution**: Already exists in `nf-file-upload.js` but not used everywhere - use `nfFormatFileSize()`
 
+#### 21. **DOM Element Creation (DUPLICATED 40+ times)**
+**Problem**: Same `createElement` + `appendChild` + property setting pattern
+```javascript
+// DUPLICATED:
+const div = document.createElement('div');
+div.className = 'some-class';
+div.textContent = 'some text';
+container.appendChild(div);
+```
+
+**Solution**: DOM builder utility
+```javascript
+// ui/dom-builder.js
+export const DOMBuilder = {
+  create(tag, props = {}, children = []) {
+    const el = document.createElement(tag);
+    Object.assign(el, props);
+    children.forEach(child => el.appendChild(typeof child === 'string' ? document.createTextNode(child) : child));
+    return el;
+  },
+  fragment(children) {
+    const frag = document.createDocumentFragment();
+    children.forEach(child => frag.appendChild(child));
+    return frag;
+  }
+};
+```
+
+#### 22. **String Highlighting/Replacement (DUPLICATED 5+ times)**
+**Problem**: Same regex replacement pattern for highlighting search terms
+```javascript
+// DUPLICATED in nf-search.js:
+const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&') + ')', 'gi');
+title = title.replace(re, '<mark>$1</mark>');
+summary = summary.replace(/<em>(.*?)<\/em>/g, '<mark>$1</mark>');
+```
+
+**Solution**: Text highlighting utility
+```javascript
+// utils/text-highlight.js
+export const TextHighlight = {
+  escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&');
+  },
+  highlight(text, query, tag = 'mark') {
+    const escaped = this.escapeRegex(query);
+    const re = new RegExp(`(${escaped})`, 'gi');
+    return text.replace(re, `<${tag}>$1</${tag}>`);
+  },
+  convertEmToMark(html) {
+    return html.replace(/<em>(.*?)<\/em>/g, '<mark>$1</mark>');
+  }
+};
+```
+
+#### 23. **Array Iteration Patterns (67 matches)**
+**Problem**: Similar forEach/map/filter patterns with error handling
+```javascript
+// DUPLICATED:
+attachments.forEach((attachment, index) => {
+    try {
+        // process attachment
+    } catch (error) {
+        window.nfLogger.warn('...', { error });
+    }
+});
+```
+
+**Solution**: Safe iteration utilities
+```javascript
+// utils/array-utils.js
+export const ArrayUtils = {
+  forEachSafe(arr, fn, onError) {
+    arr.forEach((item, index) => {
+      try {
+        fn(item, index);
+      } catch (error) {
+        onError?.(error, item, index);
+      }
+    });
+  },
+  mapSafe(arr, fn, defaultValue = null) {
+    return arr.map((item, index) => {
+      try {
+        return fn(item, index);
+      } catch (error) {
+        logger?.warn('Array map error', { error, item, index });
+        return defaultValue;
+      }
+    });
+  }
+};
+```
+
+#### 24. **Response JSON Parsing (DUPLICATED 14 times)**
+**Problem**: Same `await response.json()` pattern with error handling
+```javascript
+// DUPLICATED:
+const data = await response.json();
+// or
+const result = await response.json().catch(() => ({}));
+```
+
+**Solution**: Response parser utility
+```javascript
+// api/response-parser.js
+export async function parseResponse(response, defaultValue = null) {
+  try {
+    return await response.json();
+  } catch (error) {
+    logger?.warn('Failed to parse JSON response', { error, status: response.status });
+    return defaultValue;
+  }
+}
+```
+
+#### 25. **Element Property Setting (DUPLICATED 116 times)**
+**Problem**: Same pattern of setting textContent/innerHTML/value
+```javascript
+// DUPLICATED:
+if (element) {
+    element.textContent = value;
+    element.className = className;
+    element.style.display = display;
+}
+```
+
+**Solution**: Element property setter
+```javascript
+// ui/element-props.js
+export function setElementProps(element, props) {
+  if (!element) return;
+  Object.entries(props).forEach(([key, value]) => {
+    if (key === 'style' && typeof value === 'object') {
+      Object.assign(element.style, value);
+    } else if (key.startsWith('data-') || key.startsWith('aria-')) {
+      element.setAttribute(key, value);
+    } else {
+      element[key] = value;
+    }
+  });
+}
+```
+
 ---
 
 ### Critical Duplications Found
@@ -1099,7 +1243,7 @@ export class ResponseHandler {
 
 ### Current State
 - **Total Lines**: ~8,000+ lines
-- **Duplicated Patterns**: ~700+ instances (updated count)
+- **Duplicated Patterns**: ~800+ instances (final count)
 - **Functions**: 148 functions
 - **DOM Queries**: 197 instances
 - **Typeof Checks**: 294 instances
@@ -1109,11 +1253,16 @@ export class ResponseHandler {
 - **Form Data Extraction**: 10+ instances
 - **Empty/Null Checks**: 50+ instances
 - **Config Access**: 69 inconsistent patterns
+- **DOM Creation**: 40+ instances
+- **String Operations**: 67+ instances
+- **Array Iterations**: 67 instances
+- **Element Properties**: 116 instances
+- **JSON Parsing**: 14 instances
 
 ### After Refactoring
-- **Total Lines**: ~4,500 lines (44% reduction - improved!)
+- **Total Lines**: ~4,200 lines (47% reduction - excellent!)
 - **Duplicated Patterns**: 0 instances
-- **Functions**: ~90 functions (consolidated)
+- **Functions**: ~85 functions (consolidated)
 - **DOM Queries**: Centralized manager
 - **Typeof Checks**: Safe access utilities
 - **All Patterns**: Centralized utilities
@@ -1145,6 +1294,11 @@ export class ResponseHandler {
 16. ✅ **Logger Wrapper** - Eliminate 135 logger existence checks
 17. ✅ **Visibility Utility** - Eliminate modal visibility check duplication
 18. ✅ **File Size Formatting** - Use existing utility everywhere
+19. ✅ **DOM Builder** - Eliminate 40+ element creation duplications
+20. ✅ **Text Highlighting** - Eliminate 5+ string replacement duplications
+21. ✅ **Array Utilities** - Consolidate 67 array iteration patterns
+22. ✅ **Response Parser** - Eliminate 14 JSON parsing duplications
+23. ✅ **Element Props Setter** - Eliminate 116 property setting duplications
 
 ---
 

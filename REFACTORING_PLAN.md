@@ -550,6 +550,238 @@ export default {
 
 ## 🔍 Duplication Analysis & Elimination
 
+### 🔥 NEW FINDINGS - Additional Critical Duplications
+
+#### 11. **Date Formatting (DUPLICATED 15+ times)**
+**Problem**: `new Date().getFullYear()` and `new Date(...).toLocaleString()` repeated everywhere
+```javascript
+// DUPLICATED:
+const currentYear = new Date().getFullYear();
+const dateStr = new Date(ticket.created_at).toLocaleString(window.nfLang.getCurrentLocale());
+```
+
+**Solution**: Date utility module
+```javascript
+// utils/date.js
+export const DateUtils = {
+  getCurrentYear: () => CURRENT_YEAR, // Already defined in config
+  formatDate(date, locale) {
+    return new Date(date).toLocaleString(locale || window.nfLang.getCurrentLocale());
+  },
+  getYearFromDate(date) {
+    return new Date(date).getFullYear();
+  }
+};
+```
+
+#### 12. **Response Checking (DUPLICATED 22 times)**
+**Problem**: Same `if (!response.ok)` pattern everywhere
+```javascript
+// DUPLICATED:
+if (!response.ok) {
+    throw createApiError('...', 'ERROR_CODE', { status: response.status });
+}
+```
+
+**Solution**: Response handler
+```javascript
+// api/response-handler.js
+export async function handleResponse(response, errorCode, context) {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw createApiError(
+      error.message || `${context} failed`,
+      errorCode,
+      { status: response.status, ...error }
+    );
+  }
+  return response.json();
+}
+```
+
+#### 13. **URL Building (DUPLICATED 3+ times)**
+**Problem**: Similar URL construction in `nf-ticket-detail.js` and `nf-api-client.js`
+```javascript
+// DUPLICATED in nf-ticket-detail.js:
+const baseUrl = (NF_CONFIG && NF_CONFIG.api && NF_CONFIG.api.baseUrl) || '';
+return `${baseUrl}/attachments/${attachment.id}`;
+
+// DUPLICATED in nf-api-client.js:
+_buildUrl(endpoint) {
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${this.baseUrl}${cleanEndpoint}`;
+}
+```
+
+**Solution**: Centralized URL builder
+```javascript
+// utils/url-builder.js
+export const UrlBuilder = {
+  attachment(id) {
+    return `${ZAMMAD_API_URL()}/attachments/${id}`;
+  },
+  api(endpoint) {
+    const clean = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${ZAMMAD_API_URL()}${clean}`;
+  }
+};
+```
+
+#### 14. **Form Data Extraction (DUPLICATED 10+ times)**
+**Problem**: Same `.value.trim()` pattern repeated
+```javascript
+// DUPLICATED:
+const subject = nf.newTicketSubject.value.trim();
+const body = nf.newTicketBody.value.trim();
+const username = nf.loginUser.value.trim();
+```
+
+**Solution**: Form service
+```javascript
+// services/form-service.js
+export const FormService = {
+  getFormData(form) {
+    const data = new FormData(form);
+    const result = {};
+    for (const [key, value] of data.entries()) {
+      result[key] = typeof value === 'string' ? value.trim() : value;
+    }
+    return result;
+  },
+  getFieldValue(element) {
+    return element?.value?.trim() || '';
+  }
+};
+```
+
+#### 15. **Empty/Null Checks (DUPLICATED 50+ times)**
+**Problem**: Same empty check patterns everywhere
+```javascript
+// DUPLICATED:
+if (!attachments || !attachments.length || !container) return;
+if (!ticket || typeof ticket !== 'object') return;
+if (!file) throw new Error('No file provided');
+```
+
+**Solution**: Guard utilities
+```javascript
+// utils/guards.js
+export const Guards = {
+  required(value, name) {
+    if (!value) throw createApiError(`${name} is required`, `MISSING_${name.toUpperCase()}`);
+    return value;
+  },
+  array(arr, name) {
+    if (!Array.isArray(arr) || arr.length === 0) {
+      throw createApiError(`${name} must be a non-empty array`, `INVALID_${name.toUpperCase()}`);
+    }
+    return arr;
+  },
+  element(el, name) {
+    if (!el) throw new Error(`${name} element not found`);
+    return el;
+  }
+};
+```
+
+#### 16. **Config Access Inconsistency (DUPLICATED 69 times)**
+**Problem**: Mix of `window.NF_CONFIG` and `NF_CONFIG` imports
+```javascript
+// INCONSISTENT:
+window.NF_CONFIG?.api?.baseUrl  // Some places
+NF_CONFIG?.api?.baseUrl          // Other places
+```
+
+**Solution**: Single config accessor
+```javascript
+// core/config-accessor.js
+export function getConfig(path, defaultValue) {
+  const config = window.NF_CONFIG || NF_CONFIG;
+  return path.split('.').reduce((obj, key) => obj?.[key], config) ?? defaultValue;
+}
+```
+
+#### 17. **Logger Existence Checks (DUPLICATED 135 times)**
+**Problem**: `if (typeof nfLogger !== 'undefined')` everywhere
+```javascript
+// DUPLICATED:
+if (typeof nfLogger !== 'undefined') {
+    nfLogger.debug('...', data);
+}
+```
+
+**Solution**: Safe logger wrapper
+```javascript
+// utils/logger-wrapper.js
+export const logger = {
+  debug: (...args) => window.nfLogger?.debug(...args),
+  info: (...args) => window.nfLogger?.info(...args),
+  warn: (...args) => window.nfLogger?.warn(...args),
+  error: (...args) => window.nfLogger?.error(...args)
+};
+```
+
+#### 18. **Modal Visibility Checks (DUPLICATED 10+ times)**
+**Problem**: Same visibility check pattern
+```javascript
+// DUPLICATED:
+if (nf.ticketDetailContainer && 
+    !nf.ticketDetailContainer.classList.contains('nf-hidden') &&
+    window.getComputedStyle(nf.ticketDetailContainer).display !== 'none') {
+    // ...
+}
+```
+
+**Solution**: Visibility utility
+```javascript
+// utils/visibility.js
+export function isVisible(element) {
+  if (!element) return false;
+  return !element.classList.contains('nf-hidden') && 
+         window.getComputedStyle(element).display !== 'none';
+}
+```
+
+#### 19. **Event Listener Cleanup Pattern (DUPLICATED 5+ times)**
+**Problem**: Similar cleanup patterns in gallery, events, etc.
+```javascript
+// DUPLICATED:
+if (element && element._handler) {
+    element.removeEventListener('click', element._handler);
+    delete element._handler;
+}
+```
+
+**Solution**: Event manager
+```javascript
+// utils/event-manager.js
+export const EventManager = {
+  on(element, event, handler) {
+    element.addEventListener(event, handler);
+    return () => element.removeEventListener(event, handler);
+  },
+  once(element, event, handler) {
+    const wrapper = (...args) => {
+      handler(...args);
+      element.removeEventListener(event, wrapper);
+    };
+    element.addEventListener(event, wrapper);
+    return () => element.removeEventListener(event, wrapper);
+  }
+};
+```
+
+#### 20. **File Size Formatting (DUPLICATED 3+ times)**
+**Problem**: File size calculation repeated
+```javascript
+// DUPLICATED:
+sizeSpan.textContent = ` (${(attachment.size / 1024).toFixed(1)} KB)`;
+```
+
+**Solution**: Already exists in `nf-file-upload.js` but not used everywhere - use `nfFormatFileSize()`
+
+---
+
 ### Critical Duplications Found
 
 #### 1. **Input Validation (DUPLICATED 20+ times)**
@@ -867,17 +1099,24 @@ export class ResponseHandler {
 
 ### Current State
 - **Total Lines**: ~8,000+ lines
-- **Duplicated Patterns**: ~500+ instances
+- **Duplicated Patterns**: ~700+ instances (updated count)
 - **Functions**: 148 functions
 - **DOM Queries**: 197 instances
 - **Typeof Checks**: 294 instances
+- **Logger Checks**: 135 instances
+- **Date Formatting**: 15+ instances
+- **Response Checks**: 22 instances
+- **Form Data Extraction**: 10+ instances
+- **Empty/Null Checks**: 50+ instances
+- **Config Access**: 69 inconsistent patterns
 
 ### After Refactoring
-- **Total Lines**: ~5,000 lines (37% reduction)
+- **Total Lines**: ~4,500 lines (44% reduction - improved!)
 - **Duplicated Patterns**: 0 instances
-- **Functions**: ~100 functions (consolidated)
+- **Functions**: ~90 functions (consolidated)
 - **DOM Queries**: Centralized manager
 - **Typeof Checks**: Safe access utilities
+- **All Patterns**: Centralized utilities
 
 ---
 
@@ -898,6 +1137,14 @@ export class ResponseHandler {
 ### Low Priority (Polish)
 9. ✅ **Event Manager** - Clean up event handling
 10. ✅ **Response Handler** - Standardize API responses
+11. ✅ **Date Utilities** - Eliminate 15+ date formatting duplications
+12. ✅ **URL Builder** - Eliminate URL construction duplication
+13. ✅ **Form Service** - Eliminate 10+ form data extraction duplications
+14. ✅ **Guard Utilities** - Eliminate 50+ empty/null check duplications
+15. ✅ **Config Accessor** - Standardize 69 config access patterns
+16. ✅ **Logger Wrapper** - Eliminate 135 logger existence checks
+17. ✅ **Visibility Utility** - Eliminate modal visibility check duplication
+18. ✅ **File Size Formatting** - Use existing utility everywhere
 
 ---
 

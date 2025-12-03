@@ -9,6 +9,26 @@
 import { nfApiFetch, nfApiGet, nfApiPost, nfApiPut, createApiError } from './nf-api-utils.js';
 import { ZAMMAD_API_URL, nf } from './nf-dom.js';
 import { nfFileToBase64 } from './nf-file-upload.js';
+import appState from './nf-state.js';
+import nfEventBus from './nf-event-bus.js';
+
+/**
+ * Helper function to get user token from state management
+ * Falls back to nf.userToken for backward compatibility
+ * @returns {string|null} User authentication token
+ */
+function getUserToken() {
+    return appState.get('userToken') || nf.userToken;
+}
+
+/**
+ * Helper function to get user ID from state management
+ * Falls back to nf.userId for backward compatibility
+ * @returns {number|string|null} User ID
+ */
+function getUserId() {
+    return appState.get('userId') || nf.userId;
+}
 
 /**
  * Authenticates a user against the Zammad API and stores the credentials
@@ -66,12 +86,15 @@ async function nfAuthenticateUser(username, password) {
         
         if (!response.ok) {
             if (response.status === 401) {
-                nf._loginAttempts++;
+                const currentAttempts = appState.get('loginAttempts') || 0;
+                const newAttempts = currentAttempts + 1;
+                appState.set('loginAttempts', newAttempts);
                 const maxAttempts = window.NF_CONFIG.ui.login.maxAttempts;
                 
-                if (nf._loginAttempts >= maxAttempts) {
-                    nf._isAccountLocked = true;
+                if (newAttempts >= maxAttempts) {
+                    appState.set('isAccountLocked', true);
                     const lockoutMessage = nfGetMessage('lockoutMessage');
+                    nfEventBus.emit('login:failed', { reason: 'ACCOUNT_LOCKED', message: lockoutMessage });
                     throw createApiError(lockoutMessage, 'ACCOUNT_LOCKED');
                 }
                 
@@ -81,19 +104,30 @@ async function nfAuthenticateUser(username, password) {
                 const warningMessage = nfGetMessage('attemptsWarning');
                 const error = createApiError(errorMessage, 'INVALID_CREDENTIALS');
                 error.attemptsWarning = warningMessage;
+                nfEventBus.emit('login:failed', { reason: 'INVALID_CREDENTIALS', message: errorMessage, attempts: newAttempts });
                 throw error;
             }
             // Other HTTP errors (500, 503, etc.)
             const errorMessage = nfGetMessage('authFailed', undefined, { status: response.status });
+            nfEventBus.emit('login:failed', { reason: 'AUTH_FAILED', message: errorMessage, status: response.status });
             throw createApiError(errorMessage, 'AUTH_FAILED', { status: response.status });
         }
         
         const userData = await response.json();
+        // Update state management
+        appState.setMultiple({
+            userToken: credentials,
+            userId: userData.id,
+            loginAttempts: 0,
+            isAccountLocked: false
+        });
+        
+        // Emit login success event
+        nfEventBus.emit('login:success', { userId: userData.id, userData });
+        
+        // Backward compatibility: also set on nf object for legacy code
         nf.userToken = credentials;
         nf.userId = userData.id;
-        
-        nf._loginAttempts = 0;
-        nf._isAccountLocked = false;
         
         if (typeof NFUtils !== 'undefined' && NFUtils.storage) {
             NFUtils.storage.set('nf_session', {
@@ -154,7 +188,7 @@ async function nfFetchTicketDetail(ticketId) {
     try {
         const ticketResponse = await nfApiGet(`${ZAMMAD_API_URL()}/tickets/${ticketId}`, {
             headers: {
-                'Authorization': `Basic ${nf.userToken}`,
+                'Authorization': `Basic ${getUserToken()}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -167,7 +201,7 @@ async function nfFetchTicketDetail(ticketId) {
         
         const articlesResponse = await nfApiGet(`${ZAMMAD_API_URL()}/ticket_articles/by_ticket/${ticketId}`, {
             headers: {
-                'Authorization': `Basic ${nf.userToken}`,
+                'Authorization': `Basic ${getUserToken()}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -296,7 +330,7 @@ async function nfCreateTicket(subject, body, files, requestType) {
         const ticketData = {
             title: subject,
             group_id: window.NF_CONFIG.ui.defaultGroup,
-            customer_id: nf.userId,
+            customer_id: getUserId(),
             article: {
                 subject: subject,
                 body: body,
@@ -316,7 +350,7 @@ async function nfCreateTicket(subject, body, files, requestType) {
         
         const response = await nfApiPost(`${ZAMMAD_API_URL()}/tickets`, ticketData, {
             headers: {
-                'Authorization': `Basic ${nf.userToken}`,  // Use stored credentials
+                'Authorization': `Basic ${getUserToken()}`,  // Use stored credentials
                 'Content-Type': 'application/json'
             }
         });
@@ -362,7 +396,7 @@ async function nfSendReply(ticketId, text, files) {
         
         const response = await nfApiPost(`${ZAMMAD_API_URL()}/ticket_articles`, articleData, {
             headers: {
-                'Authorization': `Basic ${nf.userToken}`,  // Use stored credentials
+                'Authorization': `Basic ${getUserToken()}`,  // Use stored credentials
                 'Content-Type': 'application/json'
             }
         });
@@ -370,6 +404,9 @@ async function nfSendReply(ticketId, text, files) {
         if (!response.ok) {
             throw createApiError('Error creating reply', 'REPLY_CREATE_FAILED', { status: response.status });
         }
+        
+        const replyArticle = await response.json();
+        nfEventBus.emit('ticket:reply-sent', { ticketId, article: replyArticle });
         
         if (files && files.length > 0) {
             for (const file of files) {
@@ -382,14 +419,14 @@ async function nfSendReply(ticketId, text, files) {
                 
                 await nfApiPost(`${ZAMMAD_API_URL()}/ticket_attachment`, attachmentData, {
                     headers: {
-                        'Authorization': `Basic ${nf.userToken}`,
+                        'Authorization': `Basic ${getUserToken()}`,
                         'Content-Type': 'application/json'
                     }
                 });
             }
         }
         
-        return await response.json();  // Return updated ticket object
+        return replyArticle;  // Return reply article object
     } catch (error) {
         throw error;  // Pass error to calling function
     }
@@ -410,7 +447,7 @@ async function nfCloseTicket(ticketId) {
     try {
         const response = await nfApiPut(`${ZAMMAD_API_URL()}/tickets/${ticketId}`, { state_id: 4 }, {
             headers: {
-                'Authorization': `Basic ${nf.userToken}`,
+                'Authorization': `Basic ${getUserToken()}`,
                 'Content-Type': 'application/json'
             }
         });
@@ -419,7 +456,9 @@ async function nfCloseTicket(ticketId) {
             throw createApiError('Error closing ticket', 'TICKET_CLOSE_FAILED', { status: response.status });
         }
         
-        return await response.json();  // Return updated ticket object
+        const closedTicket = await response.json();
+        nfEventBus.emit('ticket:closed', { ticketId, ticket: closedTicket });
+        return closedTicket;  // Return updated ticket object
     } catch (error) {
         throw error;  // Pass error to calling function
     }
@@ -451,7 +490,7 @@ async function nfFetchRequestTypes() {
     // Fetch request types from Zammad
     const response = await nfApiGet(`${baseUrl}/object_manager_attributes?object=Ticket&name=type`, {
         headers: {
-            'Authorization': `Basic ${nf.userToken}`,
+            'Authorization': `Basic ${getUserToken()}`,
             'Content-Type': 'application/json'
         }
     });
@@ -554,7 +593,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
         searchQuery = ''
     } = filters;
     
-    const cacheKey = `tickets_${statusCategory}_${year}_${nf.userId}`;
+    const cacheKey = `tickets_${statusCategory}_${year}_${getUserId()}`;
     
     if (typeof nfCache !== 'undefined') {
         const cached = nfCache.get(cacheKey);
@@ -600,7 +639,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
     }
     
     try {
-        let query = `customer_id:${nf.userId}`;
+        let query = `customer_id:${getUserId()}`;
         
         const statusCategories = window.NF_CONFIG?.ui?.filters?.statusCategories;
         if (statusCategory !== 'all' && statusCategories) {
@@ -635,7 +674,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
                 return nfApiFetch(`${baseUrl}/tickets/search?query=${encodeURIComponent(query)}`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Basic ${nf.userToken}`,
+                        'Authorization': `Basic ${getUserToken()}`,
                         'Content-Type': 'application/json'
                     }
                 });
@@ -644,7 +683,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
             response = await nfApiFetch(`${baseUrl}/tickets/search?query=${encodeURIComponent(query)}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Basic ${nf.userToken}`,
+                    'Authorization': `Basic ${getUserToken()}`,
                     'Content-Type': 'application/json'
                 }
             });

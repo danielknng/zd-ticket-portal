@@ -4,6 +4,11 @@
  * @module ZammadApiClient
  * @since 2025-07-15
  * @version 1.0.0
+ * 
+ * @note This is a future architecture improvement. The existing codebase uses
+ *       the functions in nf-api.js. This client class provides a unified
+ *       interface for future refactoring. It is not currently integrated
+ *       into the application but is available for gradual migration.
  */
 
 import { nfApiGet, nfApiPost, nfApiPut, getAuthHeaders, createApiError } from './nf-api-utils.js';
@@ -15,6 +20,11 @@ import { nfFileToBase64 } from './nf-file-upload.js';
  * Provides unified interface for all API operations with consistent error handling
  * 
  * @class ZammadApiClient
+ * @example
+ * // Future usage (not yet integrated):
+ * const client = createApiClient();
+ * await client.authenticate(username, password);
+ * const tickets = await client.getTickets({ statusCategory: 'active' });
  */
 class ZammadApiClient {
     /**
@@ -407,4 +417,3 @@ export function createApiClient(baseUrl, authToken = null) {
 }
 
 export default ZammadApiClient;
-

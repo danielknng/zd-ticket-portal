@@ -9,6 +9,7 @@
 import { NF_CONFIG } from './nf-config.js';
 import { nf } from './nf-dom.js';
 import { nfSetLoading, nfStateLabel } from './nf-helpers.js';
+import appState from './nf-state.js';
 import { nfShow, nfHide } from './nf-helpers.js';
 import { nfShowStatus } from './nf-status.js';
 import { nfFetchTicketsFiltered } from './nf-api.js';
@@ -322,7 +323,7 @@ function nfRenderTicketList(tickets) {
 function nfInvalidateCurrentTicketCaches() {
     // Only invalidate current year caches (archived tickets shouldn't be refreshed)
     if (nfCurrentFilters.year === CURRENT_YEAR && typeof window.nfCache !== 'undefined') {
-        const cacheKey = `tickets_${nfCurrentFilters.statusCategory}_${nfCurrentFilters.year}_${nf.userId}`;
+        const cacheKey = `tickets_${nfCurrentFilters.statusCategory}_${nfCurrentFilters.year}_${appState.get('userId') || nf.userId}`;
         
         // Invalidate ticket list cache for current context
         window.nfCache.invalidate(cacheKey);

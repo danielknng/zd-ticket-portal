@@ -9,6 +9,7 @@
 import { nfApiGet, nfApiFetch } from './nf-api-utils.js';
 import { NF_CONFIG, TIMING_CONSTANTS } from './nf-config.js';
 import { nf } from './nf-dom.js';
+import appState from './nf-state.js';
 import { nfShow, nfHide, nfSetLoading } from './nf-helpers.js';
 import nfModal from './nf-modal.js';
 
@@ -155,7 +156,7 @@ async function nfLoadAuthenticatedImage(imageUrl) {
         // Use nfApiFetch to get the raw response for binary data
         const response = await nfApiFetch(imageUrl, {
             method: 'GET',
-            headers: { 'Authorization': `Basic ${nf.userToken}` },
+            headers: { 'Authorization': `Basic ${appState.get('userToken') || nf.userToken}` },
         });
         // nfApiFetch returns parsed JSON or text, but for images we need the raw response
         // If response is not a Response object, fallback:

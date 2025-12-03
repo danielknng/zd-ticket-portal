@@ -11,6 +11,7 @@ import { nfFetchTicketDetail } from './nf-api.js';
 import { nfCloneTemplate } from './nf-template-utils.js';
 import { NF_CONFIG } from './nf-config.js';
 import { nf } from './nf-dom.js';
+import appState from './nf-state.js';
 import { nfSetLoading, nfStateLabel } from './nf-helpers.js';
 import { nfShowStatus } from './nf-status.js';
 import { nfShowTicketDetail } from './nf-ui.js';
@@ -367,7 +368,7 @@ async function nfFetchUserNameById(userId) {
     
     const response = await nfApiGet(url, {
         headers: {
-            'Authorization': `Basic ${nf.userToken}`  // Use stored authentication
+            'Authorization': `Basic ${appState.get('userToken') || nf.userToken}`  // Use stored authentication
         }
     });
     
@@ -449,7 +450,7 @@ function nfRenderAttachments(attachments, container) {
                         throw new Error('No attachment URL available');
                     }
                     const response = await nfApiGet(attachmentUrl, {
-                        headers: { 'Authorization': `Basic ${nf.userToken}` }
+                        headers: { 'Authorization': `Basic ${appState.get('userToken') || nf.userToken}` }
                     });
                     if (response.ok) {
                         const blob = await response.blob();

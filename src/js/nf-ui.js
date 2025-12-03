@@ -14,6 +14,7 @@ import { nfShowStatus, nfClearLoginStatus, nfShowPersistentLoginHint, nfClearPer
 import { nfAuthenticateUser, nfFetchRequestTypes } from './nf-api.js';
 import { nfLang } from './nf-lang.js';
 import nfModal from './nf-modal.js';
+import appState from './nf-state.js';
 
 /**
  * Shows the main menu (start screen) and hides all other containers
@@ -114,7 +115,8 @@ function showNormalLoginDisplay() {
 
 function showAttemptsWarning() {
     const maxAttempts = NF_CONFIG.ui.login.maxAttempts;
-    const remaining = maxAttempts - nf._loginAttempts;
+    const loginAttempts = appState.get('loginAttempts') || 0;
+    const remaining = maxAttempts - loginAttempts;
     if (remaining > 0) {
         const baseMessage = nfLang.getLabel('loginErrors.invalidCredentials');
         const warningMessage = `${baseMessage} (${remaining} attempts remaining)`;
@@ -124,12 +126,14 @@ function showAttemptsWarning() {
 
 function nfUpdateLoginDisplay() {
     if (!nf.loginContainer || !nf.loginHint || !nf.loginWarning || !nf.loginLockout || !nf.loginSubmit) return;
-    if (nf._isAccountLocked) {
+    const isAccountLocked = appState.get('isAccountLocked') || false;
+    if (isAccountLocked) {
         showLockoutMessage();
         return;
     }
     showNormalLoginDisplay();
-    if (nf._loginAttempts > 0) {
+    const loginAttempts = appState.get('loginAttempts') || 0;
+    if (loginAttempts > 0) {
         showAttemptsWarning();
     } else {
         // Clear warning messages using the centralized status system
@@ -295,7 +299,9 @@ function handleLoginError(error) {
 }
 
 function nfRequireLogin(next) {
-    if (nf.userToken && nf.userId) { next(); return; }
+    const userToken = appState.get('userToken') || nf.userToken;
+    const userId = appState.get('userId') || nf.userId;
+    if (userToken && userId) { next(); return; }
     nfShowLogin();
     nfCleanupLoginHandlers();
     const handler = async (e) => {
@@ -346,8 +352,9 @@ function nfResetLoginState() {
     
     // Reset login attempts only if the account is not locked
     // (Lock remains until the next successful login)
-    if (!nf._isAccountLocked) {
-        nf._loginAttempts = 0;
+    const isAccountLocked = appState.get('isAccountLocked') || false;
+    if (!isAccountLocked) {
+        appState.set('loginAttempts', 0);
     }
     
     // Clear form contents for security

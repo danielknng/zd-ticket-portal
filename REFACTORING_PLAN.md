@@ -924,6 +924,156 @@ export function setElementProps(element, props) {
 }
 ```
 
+#### 26. **DataTransfer File Manipulation (DUPLICATED 9 times)**
+**Problem**: Same DataTransfer pattern for removing files from FileList
+```javascript
+// DUPLICATED in nf-file-upload.js (2 functions):
+const dt = new DataTransfer();
+const files = nf.newTicketAttachment?.files;
+Array.from(files).forEach((file, index) => {
+    if (index !== indexToRemove) {
+        dt.items.add(file);
+    }
+});
+nf.newTicketAttachment.files = dt.files;
+```
+
+**Solution**: File list utility
+```javascript
+// utils/file-list-utils.js
+export const FileListUtils = {
+  removeFile(fileList, indexToRemove) {
+    const dt = new DataTransfer();
+    Array.from(fileList).forEach((file, index) => {
+      if (index !== indexToRemove) dt.items.add(file);
+    });
+    return dt.files;
+  },
+  addFiles(fileList, newFiles) {
+    const dt = new DataTransfer();
+    Array.from(fileList).forEach(file => dt.items.add(file));
+    Array.from(newFiles).forEach(file => dt.items.add(file));
+    return dt.files;
+  }
+};
+```
+
+#### 27. **Placeholder/Fallback Images (DUPLICATED 66 times)**
+**Problem**: Same SVG data URL placeholder repeated
+```javascript
+// DUPLICATED:
+thumbImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="150" height="150"><rect width="150" height="150" fill="%23f0f0f0"/><text x="75" y="75" text-anchor="middle" fill="%23666">📎</text></svg>';
+```
+
+**Solution**: Placeholder image utility
+```javascript
+// utils/image-placeholders.js
+export const ImagePlaceholders = {
+  fileIcon(size = 150) {
+    return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="%23f0f0f0"/><text x="${size/2}" y="${size/2}" text-anchor="middle" fill="%23666">📎</text></svg>`;
+  },
+  imageError(size = 150) {
+    return `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="${size}" height="${size}" fill="%23f0f0f0"/><text x="${size/2}" y="${size/2}" text-anchor="middle" fill="%23666">⚠️</text></svg>`;
+  }
+};
+```
+
+#### 28. **Element Validation & Error Messages (DUPLICATED 20+ times)**
+**Problem**: Same pattern of checking elements and showing error messages
+```javascript
+// DUPLICATED:
+if (!nf.ticketDetailHeader) {
+    window.nfLogger.error('ticketDetailHeader missing', {});
+    nfShowStatus('Ticket detail header DOM element missing...', 'error', 'ticketdetail');
+    return;
+}
+if (!headerTemplate || !headerTemplate.firstElementChild) {
+    window.nfLogger.error('Ticket header template missing or empty', { headerTemplate });
+    nfShowStatus('Ticket header template missing...', 'error', 'ticketdetail');
+    return;
+}
+```
+
+**Solution**: Element validator
+```javascript
+// utils/element-validator.js
+export const ElementValidator = {
+  required(element, name, context) {
+    if (!element) {
+      logger?.error(`${name} missing`, {});
+      statusManager.error(`${name} DOM element missing. Please check your HTML structure.`, context);
+      throw new Error(`${name} is required`);
+    }
+    return element;
+  },
+  template(template, name, context) {
+    if (!template || !template.firstElementChild) {
+      logger?.error(`${name} template missing or empty`, { template });
+      statusManager.error(`${name} template missing or empty. Please check your HTML templates.`, context);
+      throw new Error(`${name} template is required`);
+    }
+    return template;
+  }
+};
+```
+
+#### 29. **Image Loading Promise Pattern (DUPLICATED 5+ times)**
+**Problem**: Same promise pattern for waiting for image load
+```javascript
+// DUPLICATED:
+await new Promise((resolve, reject) => {
+    image.onload = resolve;
+    image.onerror = reject;
+    setTimeout(resolve, TIMING_CONSTANTS.IMAGE_LOAD_TIMEOUT_MS);
+});
+```
+
+**Solution**: Image loader utility
+```javascript
+// utils/image-loader.js
+export async function loadImage(src, timeout = TIMING_CONSTANTS.IMAGE_LOAD_TIMEOUT_MS) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+    setTimeout(() => reject(new Error('Image load timeout')), timeout);
+  });
+}
+```
+
+#### 30. **Style Property Manipulation (DUPLICATED 27 times)**
+**Problem**: Same pattern of setting multiple style properties
+```javascript
+// DUPLICATED:
+thumbImg.style.maxWidth = '150px';
+thumbImg.style.maxHeight = '150px';
+thumbImg.style.cursor = 'pointer';
+thumbImg.style.border = '1px solid #ddd';
+thumbImg.style.borderRadius = '4px';
+thumbImg.style.padding = '4px';
+```
+
+**Solution**: Style setter utility (already covered in Element Property Setting, but can be more specific)
+```javascript
+// ui/style-utils.js
+export const StyleUtils = {
+  thumbnail(img) {
+    Object.assign(img.style, {
+      maxWidth: '150px',
+      maxHeight: '150px',
+      cursor: 'pointer',
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+      padding: '4px'
+    });
+  },
+  set(element, styles) {
+    Object.assign(element.style, styles);
+  }
+};
+```
+
 ---
 
 ### Critical Duplications Found
@@ -1243,7 +1393,7 @@ export class ResponseHandler {
 
 ### Current State
 - **Total Lines**: ~8,000+ lines
-- **Duplicated Patterns**: ~800+ instances (final count)
+- **Duplicated Patterns**: ~900+ instances (final comprehensive count)
 - **Functions**: 148 functions
 - **DOM Queries**: 197 instances
 - **Typeof Checks**: 294 instances
@@ -1258,11 +1408,16 @@ export class ResponseHandler {
 - **Array Iterations**: 67 instances
 - **Element Properties**: 116 instances
 - **JSON Parsing**: 14 instances
+- **DataTransfer**: 9 instances
+- **Placeholder Images**: 66 instances
+- **Element Validation**: 20+ instances
+- **Image Loading**: 5+ instances
+- **Style Manipulation**: 27 instances
 
 ### After Refactoring
-- **Total Lines**: ~4,200 lines (47% reduction - excellent!)
+- **Total Lines**: ~4,000 lines (50% reduction - outstanding!)
 - **Duplicated Patterns**: 0 instances
-- **Functions**: ~85 functions (consolidated)
+- **Functions**: ~80 functions (consolidated)
 - **DOM Queries**: Centralized manager
 - **Typeof Checks**: Safe access utilities
 - **All Patterns**: Centralized utilities
@@ -1299,6 +1454,11 @@ export class ResponseHandler {
 21. ✅ **Array Utilities** - Consolidate 67 array iteration patterns
 22. ✅ **Response Parser** - Eliminate 14 JSON parsing duplications
 23. ✅ **Element Props Setter** - Eliminate 116 property setting duplications
+24. ✅ **File List Utils** - Eliminate 9 DataTransfer duplications
+25. ✅ **Image Placeholders** - Eliminate 66 placeholder image duplications
+26. ✅ **Element Validator** - Eliminate 20+ validation pattern duplications
+27. ✅ **Image Loader** - Eliminate 5+ image loading promise duplications
+28. ✅ **Style Utils** - Eliminate 27 style manipulation duplications
 
 ---
 

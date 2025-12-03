@@ -87,9 +87,6 @@ async function nfAuthenticateUser(username, password) {
             throw createApiError(errorMessage, 'MISSING_CREDENTIALS');
         }
         
-        const authString = `${cleanUsername}:${cleanPassword}`;
-        const credentials = btoa(authString);
-        
         if (typeof nfLogger !== 'undefined') {
             nfLogger.info('Attempting authentication', { username: cleanUsername });
         }
@@ -99,17 +96,15 @@ async function nfAuthenticateUser(username, password) {
             hasConfig: !!window.NF_CONFIG,
             apiUrl: ZAMMAD_API_URL()
         });
-        // Use /users/me endpoint to validate credentials
-        nfLogger.debug('About to fetch', { url: `${ZAMMAD_API_URL()}/users/me` });
-        const response = await nfApiGet(`${ZAMMAD_API_URL()}/users/me`, {
-            headers: {
-                'Authorization': `Basic ${credentials}`,  // HTTP Basic Authentication Header
-                'Content-Type': 'application/json'
-            }
-        });
         
-        if (!response.ok) {
-            if (response.status === 401) {
+        // Use API client to authenticate
+        const client = getApiClient();
+        let userData;
+        try {
+            userData = await client.authenticate(cleanUsername, cleanPassword);
+        } catch (apiError) {
+            // Handle authentication errors with login attempt tracking
+            if (apiError.code === 'API_INVALID_CREDENTIALS' || apiError.code === 'API_AUTH_FAILED') {
                 const currentAttempts = appState.get('loginAttempts') || 0;
                 const newAttempts = currentAttempts + 1;
                 appState.set('loginAttempts', newAttempts);
@@ -123,7 +118,6 @@ async function nfAuthenticateUser(username, password) {
                 }
                 
                 // 401 = Unauthorized - invalid credentials
-                // Simplified: no remaining attempts, just a generic warning
                 const errorMessage = nfGetMessage('invalidCredentials');
                 const warningMessage = nfGetMessage('attemptsWarning');
                 const error = createApiError(errorMessage, 'INVALID_CREDENTIALS');
@@ -132,12 +126,14 @@ async function nfAuthenticateUser(username, password) {
                 throw error;
             }
             // Other HTTP errors (500, 503, etc.)
-            const errorMessage = nfGetMessage('authFailed', undefined, { status: response.status });
-            nfEventBus.emit('login:failed', { reason: 'AUTH_FAILED', message: errorMessage, status: response.status });
-            throw createApiError(errorMessage, 'AUTH_FAILED', { status: response.status });
+            const errorMessage = nfGetMessage('authFailed', undefined, { status: apiError.details?.status });
+            nfEventBus.emit('login:failed', { reason: 'AUTH_FAILED', message: errorMessage, status: apiError.details?.status });
+            throw createApiError(errorMessage, 'AUTH_FAILED', { status: apiError.details?.status });
         }
         
-        const userData = await response.json();
+        // Get credentials from client (it was set during authentication)
+        const credentials = client.authToken;
+        
         // Update state management
         appState.setMultiple({
             userToken: credentials,
@@ -145,9 +141,6 @@ async function nfAuthenticateUser(username, password) {
             loginAttempts: 0,
             isAccountLocked: false
         });
-        
-        // Update API client with new token
-        getApiClient().setAuthToken(credentials);
         
         // Emit login success event
         nfEventBus.emit('login:success', { userId: userData.id, userData });

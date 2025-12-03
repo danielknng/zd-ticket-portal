@@ -362,6 +362,242 @@ export class Config {
 - **Functions**: ~70 functions (consolidated)
 - **All Patterns**: Centralized utilities
 
+### Additional Patterns Found (36-42)
+
+#### 36. **Focusable Element Query (DUPLICATED 3 times)**
+**Problem**: Same focusable element selector repeated in `nf-modal.js` and `nf-gallery.js`
+```javascript
+// DUPLICATED in nf-modal.js (2x) and nf-gallery.js (1x):
+const focusable = el.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+if (focusable.length) {
+    focusable[0].focus();
+}
+```
+
+**Solution**: Focus utility
+```javascript
+// ui/focus-utils.js
+export const FocusUtils = {
+  getFocusableElements(container) {
+    return container.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  },
+  focusFirst(container) {
+    const focusable = this.getFocusableElements(container);
+    if (focusable.length) {
+      focusable[0].focus();
+    } else {
+      container.focus();
+    }
+  }
+};
+```
+
+#### 37. **Cache TTL Calculation (DUPLICATED 2 times)**
+**Problem**: Same cache TTL calculation logic in `nfFetchTicketDetail` and `nfFetchTicketsFiltered`
+```javascript
+// DUPLICATED in nf-api.js (2 functions):
+let cacheTTL;
+let cacheDescription;
+if (ticketYear < currentYear) {
+    cacheTTL = window.NF_CONFIG.ui.cache.archivedTicketDetailTTL;
+    cacheDescription = 'long-term (archived)';
+} else if (isClosedTicket) {
+    cacheTTL = window.NF_CONFIG.ui.cache.currentYearClosedTicketDetailTTL;
+    cacheDescription = 'medium-term (closed current year)';
+} else {
+    cacheTTL = window.NF_CONFIG.ui.cache.currentYearActiveTicketDetailTTL;
+    cacheDescription = 'short-term (active current year)';
+}
+```
+
+**Solution**: Cache strategy utility
+```javascript
+// api/cache-strategy.js
+export const CacheStrategy = {
+  getTicketDetailTTL(ticketYear, currentYear, isClosed) {
+    if (ticketYear < currentYear) {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.archivedTicketDetailTTL,
+        description: 'long-term (archived)',
+        reason: 'previous year'
+      };
+    } else if (isClosed) {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.currentYearClosedTicketDetailTTL,
+        description: 'medium-term (closed current year)',
+        reason: 'closed current year'
+      };
+    } else {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.currentYearActiveTicketDetailTTL,
+        description: 'short-term (active current year)',
+        reason: 'active current year'
+      };
+    }
+  },
+  getTicketListTTL(year, currentYear, statusCategory) {
+    if (year < currentYear) {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.archivedTicketListTTL,
+        description: 'archived (30 days)'
+      };
+    } else if (statusCategory === 'closed') {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.currentYearClosedTicketListTTL,
+        description: 'current year closed (4 hours)'
+      };
+    } else {
+      return {
+        ttl: window.NF_CONFIG.ui.cache.currentYearActiveTicketListTTL,
+        description: 'current year active (15 minutes)'
+      };
+    }
+  }
+};
+```
+
+#### 38. **Performance Measurement Pattern (DUPLICATED 6 times)**
+**Problem**: Same performance measurement pattern in `nf-api.js`
+```javascript
+// DUPLICATED 6 times in nf-api.js:
+if (typeof nfPerf !== 'undefined' && window.NF_CONFIG?.debug?.enabled) {
+    nfPerf.mark('operation-start');
+}
+// ... operation ...
+if (typeof nfPerf !== 'undefined' && window.NF_CONFIG?.debug?.enabled) {
+    nfPerf.measure('Operation Name', 'operation-start');
+}
+```
+
+**Solution**: Performance wrapper
+```javascript
+// utils/performance-wrapper.js
+export function withPerformance(fn, operationName) {
+  return async function(...args) {
+    const shouldMeasure = typeof nfPerf !== 'undefined' && window.NF_CONFIG?.debug?.enabled;
+    const markName = `${operationName.toLowerCase().replace(/\s+/g, '-')}-start`;
+    
+    if (shouldMeasure) nfPerf.mark(markName);
+    try {
+      const result = await fn.apply(this, args);
+      if (shouldMeasure) nfPerf.measure(operationName, markName);
+      return result;
+    } catch (error) {
+      if (shouldMeasure) nfPerf.measure(operationName, markName);
+      throw error;
+    }
+  };
+}
+```
+
+#### 39. **getElementById in MODAL_IDS.forEach (DUPLICATED 6 times)**
+**Problem**: Same pattern of iterating MODAL_IDS and calling getElementById
+```javascript
+// DUPLICATED in nf-modal.js (4x), nf-gallery.js (1x), nf-ui.js (1x):
+MODAL_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        // do something with el
+    }
+});
+```
+
+**Solution**: Modal iterator utility
+```javascript
+// ui/modal-utils.js
+export const ModalUtils = {
+  forEachModal(callback) {
+    MODAL_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) callback(el, id);
+    });
+  },
+  getModal(id) {
+    return document.getElementById(id);
+  }
+};
+```
+
+#### 40. **Modal Visibility Check (DUPLICATED 4 times)**
+**Problem**: Same visibility check pattern in `nf-events.js`
+```javascript
+// DUPLICATED 4 times in nf-events.js:
+if (nf.ticketDetailContainer && 
+    !nf.ticketDetailContainer.classList.contains('nf-hidden') &&
+    window.getComputedStyle(nf.ticketDetailContainer).display !== 'none') {
+    // ...
+}
+```
+
+**Solution**: Visibility utility
+```javascript
+// utils/visibility.js
+export function isModalVisible(container) {
+  if (!container) return false;
+  return !container.classList.contains('nf-hidden') && 
+         window.getComputedStyle(container).display !== 'none';
+}
+```
+
+#### 41. **Option textContent Setting (DUPLICATED 2 times)**
+**Problem**: Same pattern for setting option textContent in `nf-ui-init.js`
+```javascript
+// DUPLICATED in nf-ui-init.js (2 functions):
+const options = select.querySelectorAll('option');
+options.forEach(option => {
+    const value = option.value;
+    if (labels.someKey[value]) {
+        option.textContent = labels.someKey[value];
+    }
+});
+```
+
+**Solution**: Option setter helper
+```javascript
+// nf-ui-init.js
+function _setSelectOptions(select, labels, labelKey) {
+    if (!select || !labels || !labels[labelKey]) return;
+    const options = select.querySelectorAll('option');
+    options.forEach(option => {
+        const value = option.value;
+        if (labels[labelKey][value]) {
+            option.textContent = labels[labelKey][value];
+        }
+    });
+}
+```
+
+#### 42. **File Processing Loop (DUPLICATED 2 times)**
+**Problem**: Same file-to-base64 loop in `nf-api-client.js`
+```javascript
+// DUPLICATED in createTicket and sendReply:
+for (const file of files) {
+    const base64Data = await nfFileToBase64(file);
+    attachments.push({
+        filename: file.name,
+        data: base64Data,
+        'mime-type': file.type
+    });
+}
+```
+
+**Solution**: File processor utility
+```javascript
+// utils/file-processor.js
+export async function processFilesToAttachments(files) {
+    const attachments = [];
+    for (const file of files) {
+        const base64Data = await nfFileToBase64(file);
+        attachments.push({
+            filename: file.name,
+            data: base64Data,
+            'mime-type': file.type
+        });
+    }
+    return attachments;
+}
+```
+
 ---
 
 ## 📊 Duplication Patterns (42 Total)
@@ -552,8 +788,15 @@ export const FormService = {
 - **UI Init Patterns** (36+ instances) → Helper functions
 - **Cache localStorage** (18 instances) → Storage helpers
 - **Language Data Access** (4 instances) → Language data helper
+- **Focusable Element Query** (3 instances) → Focus utility
+- **Cache TTL Calculation** (2 instances) → Cache strategy utility
+- **Performance Measurement** (6 instances) → Performance wrapper
+- **Modal ID Iteration** (6 instances) → Modal iterator utility
+- **Modal Visibility Check** (4 instances) → Visibility utility
+- **Option Setting** (2 instances) → Option setter helper
+- **File Processing Loop** (2 instances) → File processor utility
 
-*[Full details for patterns 9-35 available in previous analysis]*
+*[Full details for patterns 9-42 available in previous analysis]*
 
 ---
 
@@ -612,7 +855,7 @@ export const FormService = {
 8. ✅ **File Service** - Eliminate file processing duplication
 
 ### Low Priority (Polish)
-9-33. ✅ **All remaining patterns** - See duplication analysis section
+9-42. ✅ **All remaining patterns** - See duplication analysis section
 
 ---
 

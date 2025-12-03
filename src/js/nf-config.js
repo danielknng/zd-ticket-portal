@@ -42,8 +42,9 @@ const NF_CONFIG = {
         },
         timeout: 10000,
         retryAttempts: 3,
-        // If you want to use this feature, make sure that in Zammad you have a custom object with the name "type" and the Type "select". This way, the user can choose the request type of his ticket.
-        allowRequestType: true
+        // If you want to use this feature, make sure that in Zammad you have a custom object with the name "type" and the format "Single selection field". 
+        // This way, the user can choose the request type of his ticket. (E.g.: General request, Issue, Question, ...)
+        allowRequestType: false
     },
 
     /**

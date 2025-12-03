@@ -11,6 +11,32 @@ import { ZAMMAD_API_URL, nf } from './nf-dom.js';
 import { nfFileToBase64 } from './nf-file-upload.js';
 import appState from './nf-state.js';
 import nfEventBus from './nf-event-bus.js';
+import { createApiClient } from './nf-api-client.js';
+
+/**
+ * Singleton API client instance
+ * @type {ZammadApiClient|null}
+ */
+let apiClient = null;
+
+/**
+ * Get or create the API client instance
+ * @returns {ZammadApiClient} API client instance
+ */
+function getApiClient() {
+    if (!apiClient) {
+        const baseUrl = ZAMMAD_API_URL();
+        const userToken = getUserToken();
+        apiClient = createApiClient(baseUrl, userToken);
+    } else {
+        // Update auth token if it changed
+        const userToken = getUserToken();
+        if (userToken) {
+            apiClient.setAuthToken(userToken);
+        }
+    }
+    return apiClient;
+}
 
 /**
  * Helper function to get user token from state management
@@ -186,32 +212,9 @@ async function nfFetchTicketDetail(ticketId) {
     }
     
     try {
-        const ticketResponse = await nfApiGet(`${ZAMMAD_API_URL()}/tickets/${ticketId}`, {
-            headers: {
-                'Authorization': `Basic ${getUserToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!ticketResponse.ok) {
-            throw createApiError('Error loading ticket details', 'TICKET_FETCH_FAILED', { status: ticketResponse.status });
-        }
-        
-        const ticket = await ticketResponse.json();
-        
-        const articlesResponse = await nfApiGet(`${ZAMMAD_API_URL()}/ticket_articles/by_ticket/${ticketId}`, {
-            headers: {
-                'Authorization': `Basic ${getUserToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!articlesResponse.ok) {
-            throw createApiError('Error loading ticket articles', 'ARTICLES_FETCH_FAILED', { status: articlesResponse.status });
-        }
-        
-        const articles = await articlesResponse.json();
-        ticket.articles = articles;
+        // Use API client to fetch ticket with articles
+        const ticket = await getApiClient().getTicket(ticketId);
+        const articles = ticket.articles || [];
         
         ticket.messages = (articles || []).map(a => ({
             from: a.from || (a.sender_id === 1 ? 'Support' : 'User'),
@@ -231,7 +234,7 @@ async function nfFetchTicketDetail(ticketId) {
             let cacheDescription;
             let cacheReason;
             
-            if (ticketYear < CURRENT_YEAR) {
+            if (ticketYear < currentYear) {
                 // Archived tickets (any status): long cache
                 cacheTTL = window.NF_CONFIG.ui.cache.archivedTicketDetailTTL;
                 cacheDescription = 'long-term (archived)';
@@ -261,7 +264,7 @@ async function nfFetchTicketDetail(ticketId) {
                     reason: cacheReason,
                     ttlMinutes: Math.round(cacheTTL / (60 * 1000)),
                     ticketYear,
-                    currentYear,
+                    currentYear: currentYear,
                     ticketStateId,
                     isClosedTicket,
                     localStorage: true 
@@ -387,45 +390,10 @@ async function nfSendReply(ticketId, text, files) {
     }
     
     try {
-        const articleData = {
-            ticket_id: ticketId,
-            body: text,
-            type: 'web',
-            internal: false
-        };
-        
-        const response = await nfApiPost(`${ZAMMAD_API_URL()}/ticket_articles`, articleData, {
-            headers: {
-                'Authorization': `Basic ${getUserToken()}`,  // Use stored credentials
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw createApiError('Error creating reply', 'REPLY_CREATE_FAILED', { status: response.status });
-        }
-        
-        const replyArticle = await response.json();
+        // Use API client to send reply
+        const client = getApiClient();
+        const replyArticle = await client.sendReply(ticketId, text, files);
         nfEventBus.emit('ticket:reply-sent', { ticketId, article: replyArticle });
-        
-        if (files && files.length > 0) {
-            for (const file of files) {
-                const base64Data = await nfFileToBase64(file);  // Convert file to Base64
-                const attachmentData = {
-                    filename: file.name,         // Original file name
-                    data: base64Data,           // Base64 encoded file data
-                    'Content-Type': file.type   // MIME type of the file
-                };
-                
-                await nfApiPost(`${ZAMMAD_API_URL()}/ticket_attachment`, attachmentData, {
-                    headers: {
-                        'Authorization': `Basic ${getUserToken()}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-        }
-        
         return replyArticle;  // Return reply article object
     } catch (error) {
         throw error;  // Pass error to calling function
@@ -445,18 +413,9 @@ async function nfCloseTicket(ticketId) {
         throw createApiError('Ticket ID is required and must be a number or string', 'INVALID_TICKET_ID');
     }
     try {
-        const response = await nfApiPut(`${ZAMMAD_API_URL()}/tickets/${ticketId}`, { state_id: 4 }, {
-            headers: {
-                'Authorization': `Basic ${getUserToken()}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw createApiError('Error closing ticket', 'TICKET_CLOSE_FAILED', { status: response.status });
-        }
-        
-        const closedTicket = await response.json();
+        // Use API client to close ticket
+        const client = getApiClient();
+        const closedTicket = await client.closeTicket(ticketId);
         nfEventBus.emit('ticket:closed', { ticketId, ticket: closedTicket });
         return closedTicket;  // Return updated ticket object
     } catch (error) {
@@ -586,9 +545,10 @@ async function nfFetchRequestTypes() {
  * @returns {Promise<Array>} Array of filtered ticket objects
  */
 async function nfFetchTicketsFiltered(filters = {}) {
+    const currentYear = new Date().getFullYear();
     const {
         statusCategory = window.NF_CONFIG?.ui?.filters?.defaultStatusFilter || 'active',
-        year = CURRENT_YEAR,
+        year = currentYear,
         sortOrder = window.NF_CONFIG?.ui?.filters?.defaultSortOrder || 'date_desc',
         searchQuery = ''
     } = filters;
@@ -599,7 +559,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
         const cached = nfCache.get(cacheKey);
         if (cached) {
             let cacheType;
-            if (year < CURRENT_YEAR) {
+            if (year < currentYear) {
                 cacheType = 'archived';
             } else if (statusCategory === 'closed') {
                 cacheType = 'current year closed';
@@ -613,7 +573,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
                     count: cached.length,
                     statusCategory,
                     year,
-                    currentYear: CURRENT_YEAR,
+                    currentYear: currentYear,
                     cacheType
                 });
             }
@@ -623,7 +583,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
     
     // For current year tickets or cache miss, fetch from API
     if (typeof nfLogger !== 'undefined') {
-        const cachingStrategy = year < CURRENT_YEAR ? 'archived (will cache)' : 'current year (no cache)';
+        const cachingStrategy = year < currentYear ? 'archived (will cache)' : 'current year (no cache)';
         nfLogger.debug('Fetching filtered tickets', {
             query: searchQuery,
             statusCategory,
@@ -651,7 +611,7 @@ async function nfFetchTicketsFiltered(filters = {}) {
         }
         
         // Add year filter (only for closed tickets or specific years)
-        if (statusCategory === 'closed' && year !== CURRENT_YEAR) {
+        if (statusCategory === 'closed' && year !== currentYear) {
             const yearStart = `${year}-01-01T00:00:00Z`;
             const yearEnd = `${year}-12-31T23:59:59Z`;
             query += ` AND created_at:[${yearStart} TO ${yearEnd}]`;

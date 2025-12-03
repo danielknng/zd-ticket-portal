@@ -178,6 +178,7 @@ async function nfAuthenticateUser(username, password) {
  */
 async function nfFetchTicketDetail(ticketId) {
     const cacheKey = `ticket_detail_${ticketId}`;
+    const currentYear = new Date().getFullYear();
     
     if (typeof nfCache !== 'undefined') {
         const cached = nfCache.get(cacheKey);

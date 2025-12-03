@@ -316,53 +316,16 @@ async function nfCreateTicket(subject, body, files, requestType) {
     }
     
     try {
-        
-        let attachments = [];
-        if (files && files.length > 0) {
-            // Iterate over all selected files
-            for (const file of files) {
-                const base64Data = await nfFileToBase64(file);  // Convert file to Base64
-                attachments.push({
-                    filename: file.name,      // Original file name
-                    data: base64Data,        // Base64 encoded file data
-                    'mime-type': file.type   // MIME type of the file (e.g. image/jpeg)
-                });
-            }
-        }
-        
-        const ticketData = {
-            title: subject,
-            group_id: window.NF_CONFIG.ui.defaultGroup,
-            customer_id: getUserId(),
-            article: {
-                subject: subject,
-                body: body,
-                type: 'web',
-                attachments: attachments.length > 0 ? attachments : undefined
-            }
-        };
-
-        // Attach custom request type ("Anfrageart") if provided
-        // Zammad expects the string value from the custom object attribute (e.g., "problem", "general_request")
-        if (requestType && typeof requestType === 'string' && requestType.trim() !== '') {
-            ticketData.type = requestType.trim();
-            if (typeof nfLogger !== 'undefined') {
-                nfLogger.debug('Including request type in ticket creation', { requestType: ticketData.type });
-            }
-        }
-        
-        const response = await nfApiPost(`${ZAMMAD_API_URL()}/tickets`, ticketData, {
-            headers: {
-                'Authorization': `Basic ${getUserToken()}`,  // Use stored credentials
-                'Content-Type': 'application/json'
-            }
+        // Use API client to create ticket (handles file conversion and payload building internally)
+        const client = getApiClient();
+        const createdTicket = await client.createTicket({
+            subject,
+            body,
+            files,
+            requestType
         });
-        
-        if (!response.ok) {
-            throw createApiError('Error creating ticket', 'TICKET_CREATE_FAILED', { status: response.status });
-        }
-        
-        return await response.json();  // Return created ticket object
+        nfEventBus.emit('ticket:created', { ticket: createdTicket });
+        return createdTicket;  // Return created ticket object
     } catch (error) {
         throw error;  // Pass error to calling function
     }

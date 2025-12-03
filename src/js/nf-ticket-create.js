@@ -10,6 +10,7 @@ import { nfCreateTicket } from './nf-api.js';
 import { nfSetLoading } from './nf-helpers.js';
 import { nfShowStatus } from './nf-status.js';
 import { nfClearFilePreview, nfValidateFile } from './nf-file-upload.js';
+import { nfShowStart } from './nf-ui.js';
 import { nf } from './nf-dom.js';
 import { NF_CONFIG } from './nf-config.js';
 

@@ -1,0 +1,213 @@
+/*
+====================================================
+  TICKET CREATION (NEW TICKET) - MODERN DESIGN
+====================================================*/
+.nf-newticket-modal {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  z-index: 2002;
+  background: rgba(30, 34, 90, 0.15);
+  pointer-events: all;
+  display: block !important;
+}
+
+.nf-newticket-container {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2003;
+  width: 100%;
+  max-width: 700px;
+  background: var(--bg-white);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow-heavy);
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.nf-newticket-title {
+  color: var(--primary-dark);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  width: 100%;
+}
+
+.nf-newticket-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.nf-newticket-group {
+  margin-bottom: 1.5rem;
+}
+
+.nf-newticket-group label {
+  display: block;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--secondary-dark);
+  margin-bottom: 0.5rem;
+}
+
+.nf-newticket-form input[type="text"],
+.nf-newticket-form textarea {
+  border: var(--border-width) solid var(--border-medium);
+  border-radius: var(--border-radius-small);
+  padding: 0.8rem 0.7rem;
+  font-size: 1rem;
+  background: var(--bg-white);
+  color: #222;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border var(--transition-medium), background var(--transition-medium), box-shadow var(--transition-medium);
+  line-height: 1.5;
+}
+
+.nf-newticket-form input[type="text"]:focus,
+.nf-newticket-form textarea:focus {
+  border: var(--border-width) solid var(--primary-medium);
+  outline: none;
+  background: var(--bg-white);
+  box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+}
+
+.nf-newticket-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Dateiupload - Modern Design */
+.nf-newticket-form .file-upload {
+  position: relative;
+}
+
+.nf-newticket-form .file-upload input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.nf-newticket-form .file-upload-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1.5rem;
+  border: 2px dashed var(--border-medium);
+  border-radius: 12px;
+  cursor: pointer;
+  background: var(--bg-lightest);
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+  font-size: 1rem;
+  color: var(--secondary-medium);
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.nf-newticket-form .file-upload-label:hover {
+  border-color: var(--primary-medium);
+  background: var(--bg-light);
+  transform: translateY(-1px);
+}
+
+/* Drag & Drop Feedback */
+.file-upload.drag-over .file-upload-label {
+  border-color: var(--primary-medium);
+  background: var(--primary-lightest);
+  transform: scale(1.02);
+}
+
+.nf-newticket-form .upload-text {
+  margin: 0;
+  color: var(--secondary-medium);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+/* Button-Reihe - Modern Design */
+.nf-newticket-form .nf-btn-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.nf-newticket-form .nf-btn-row .nf-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--border-radius-small);
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-medium), transform 0.1s, box-shadow var(--transition-medium);
+}
+
+.nf-newticket-form .nf-btn--primary {
+  background: var(--primary-medium);
+  color: var(--bg-white);
+  box-shadow: 0 2px 6px rgba(30,34,90,0.12);
+}
+
+.nf-newticket-form .nf-btn--primary:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(30,34,90,0.18);
+}
+
+.nf-newticket-form .nf-btn--secondary {
+  background: var(--bg-white);
+  color: var(--secondary-dark);
+  border: var(--border-width) solid var(--border-medium) !important;
+  box-shadow: var(--box-shadow-light);
+}
+
+.nf-newticket-form .nf-btn--secondary:hover {
+  background: var(--bg-light);
+  border-color: var(--primary-medium) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--box-shadow-medium);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nf-newticket-container {
+    width: 95vw;
+    max-width: 95vw;
+    padding: 1.5rem 1rem;
+    border-radius: 12px;
+  }
+  
+  .nf-newticket-form .nf-btn-row {
+    flex-direction: column;
+  }
+  
+  .nf-newticket-form .nf-btn-row .nf-btn {
+    width: 100%;
+  }
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 700px) {
+  .nf-newticket-container {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+}

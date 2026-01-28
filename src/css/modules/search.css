@@ -1,0 +1,119 @@
+/*
+====================================================
+  SEARCHBAR & DROPDOWN
+====================================================*/
+.nf-searchbar {
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 5rem;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nf-search-input {
+  width: 100%;
+  max-width: 800px;
+  display: block;
+  padding: 0.75rem 1rem;
+  border: var(--border-width) solid var(--border-dark);
+  border-radius: var(--border-radius-small);
+  font-size: 1.1rem;
+  background: var(--bg-light);
+  color: var(--text-dark);
+  box-shadow: var(--box-shadow-light);
+  transition: border-color var(--transition-medium);
+}
+
+.nf-search-input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+  background: var(--bg-white);
+}
+
+.nf-search-dropdown {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1200;
+  background: var(--bg-white);
+  box-shadow: var(--box-shadow-medium);
+  border-radius: 10px;
+  min-width: 800px;
+  width: 100%;
+  max-width: none;
+  max-height: 350px;
+  overflow-y: auto;
+  margin-top: 2px;
+  padding: 0.5rem 0;
+  display: none;
+}
+
+.nf-search-icon {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-medium);
+  font-size: 1.5rem;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.nf-search-result {
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-separator);
+  transition: background var(--transition-fast);
+}
+
+.nf-search-result:last-child {
+  border-bottom: none;
+}
+
+.nf-search-result:hover {
+  background: var(--bg-gray);
+}
+
+.nf-search-result mark {
+  background: var(--highlight-bg);
+  color: var(--primary-medium);
+  font-weight: 700;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Einheitliche Hervorhebung für Titel (gleich wie Fließtext) */
+.nf-search-result-title mark {
+  background: var(--highlight-bg);
+  color: var(--primary-medium);
+  font-weight: 700;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.nf-search-result-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--primary-medium);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.nf-search-result em {
+  background: var(--highlight-bg);
+  color: var(--primary-medium);
+  font-weight: 700;
+  font-style: normal;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Style for search result summary (moved from inline style in HTML) */
+.nf-search-result-summary {
+  font-size: 0.97rem;
+  color: #555;
+}

@@ -1,0 +1,215 @@
+/*
+====================================================
+  TICKET LIST (OVERVIEW)
+====================================================*/
+.nf-ticketlist-container {
+  width: 100%;
+  max-width: 900px;
+  /*margin: 2rem auto;*/
+  background: var(--bg-white);
+  border-radius: 14px;
+  box-shadow: var(--box-shadow-medium);
+  padding: 2rem 1.5rem;
+}
+
+.nf-ticketlist-filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nf-ticketlist-filter,
+.nf-ticketlist-sort,
+.nf-ticketlist-year {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-lighter);
+  font-size: 1rem;
+  color: var(--secondary-dark);
+  transition: border-color 0.2s, background-color 0.2s;
+  min-width: 140px;
+}
+
+.nf-ticketlist-filter:focus,
+.nf-ticketlist-sort:focus,
+.nf-ticketlist-year:focus {
+  outline: none;
+  border-color: var(--primary-medium);
+  background: var(--bg-white);
+  box-shadow: 0 0 0 2px rgba(58, 79, 163, 0.2);
+}
+
+.nf-ticketlist-year.nf-hidden {
+  display: none;
+}
+
+/* Clickable header for sorting */
+.nf-ticketlist-header-cell {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.nf-ticketlist-header-cell:hover {
+  background: var(--table-hover-bg);
+}
+
+.nf-ticketlist-header-cell::after {
+  content: '↕';
+  position: absolute;
+  right: 8px;
+  opacity: 0.5;
+  font-size: 0.9rem;
+}
+
+.nf-ticketlist-header-cell:hover::after {
+  opacity: 0.8;
+}
+
+/* --- Ticketübersicht Tabelle: Modernes Design & Alignment --- */
+.nf-ticketlist-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.7rem;
+  background: none;
+}
+
+.nf-ticketlist-header th {
+  background: var(--table-header-bg);
+  color: var(--secondary-dark);
+  font-weight: 700;
+  font-size: 1.08rem;
+  padding: 0.85rem 1rem 0.85rem 1rem;
+  text-align: center;
+  border-radius: 10px 10px 0 0;
+  border-bottom: 2.5px solid var(--border-light);
+  position: relative;
+  /* Abstand zwischen Header und Rows */
+  box-shadow: 0 2px 0 0 var(--border-light);
+}
+
+.nf-ticketlist-header th:not(:last-child) {
+  border-right: 1.5px solid var(--border-light);
+}
+
+.nf-ticketlist-row {
+  background: var(--bg-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(30,34,90,0.07);
+  transition: box-shadow 0.18s, background 0.18s;
+  cursor: pointer;
+  user-select: none;
+}
+
+.nf-ticketlist-row:hover {
+  background: var(--table-hover-bg);
+  box-shadow: 0 4px 18px rgba(30,34,90,0.13);
+}
+
+.nf-ticketlist-cell {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  color: #222;
+  vertical-align: middle;
+  border: none;
+}
+
+.nf-ticketlist-cell--id {
+  text-align: center;
+  font-family: 'Fira Mono', 'Consolas', 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--primary-dark);
+  width: 80px;
+}
+
+.nf-ticketlist-cell--subject {
+  text-align: left;
+  font-weight: 500;
+  color: #222;
+}
+
+.nf-ticketlist-cell--created {
+  text-align: center;
+  color: var(--secondary-light);
+  font-size: 0.98rem;
+  white-space: nowrap;
+}
+
+.nf-ticketlist-cell--status {
+  text-align: center;
+}
+
+/* Status-Badges verwenden die gemeinsame Klasse */
+.nf-ticketlist-status {
+  display: inline-block;
+  padding: 0.28rem 1.2rem;
+  border-radius: 16px;
+  font-size: 1.01rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-width: 80px;
+  box-shadow: var(--box-shadow-light);
+  border: var(--border-width) solid var(--bg-white);
+  margin: 0 auto;
+  background: var(--border-light);
+  color: var(--primary-dark);
+  transition: background var(--transition-medium), color var(--transition-medium);
+}
+
+.nf-ticketlist-status--1, .nf-ticketlist-status--new { background: var(--status-new); color: var(--bg-white); }
+.nf-ticketlist-status--2 { background: var(--status-open); color: var(--bg-white); }
+.nf-ticketlist-status--3, .nf-ticketlist-status--7, .nf-ticketlist-status--8, .nf-ticketlist-status--10 { background: var(--status-waiting); color: var(--bg-white); }
+.nf-ticketlist-status--4, .nf-ticketlist-status--closed { background: var(--status-closed); color: var(--bg-white); }
+.nf-ticketlist-status--5 { background: var(--status-merged); color: var(--bg-white); }
+.nf-ticketlist-status--9 { background: var(--status-progress); color: var(--bg-white); }
+
+/* Ticketübersicht als Modal-Overlay */
+.nf-ticketlist-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2002;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(30,34,90,0.18);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  /* Padding-right für bessere Scrollbalken-Darstellung */
+  padding-right: 1rem;
+}
+
+/* Neue CSS-Klasse für Reload-Button */
+.nf-ticketlist-reload {
+  height: 2.05rem; /* Match select height exactly (0.4rem top + 1rem font + 0.4rem bottom + 2*1px border) */
+  min-width: 140px;
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  position: relative;
+  top: 2px; /* Move button down slightly for perfect vertical alignment */
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 600px) {
+  .nf-ticketlist-modal {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+}

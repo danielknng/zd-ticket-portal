@@ -1,0 +1,52 @@
+/*
+====================================================
+  UTILITY & HELPER CLASSES
+====================================================*/
+.nf-hidden {
+  display: none !important;
+}
+
+.nf-highlight {
+  background: var(--highlight-bg) !important;
+}
+
+.nf-blur-bg {
+  filter: blur(4px);
+}
+
+.nf-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nf-template {
+  display: none !important;
+}
+
+.nf-center-text {
+  text-align: center;
+}
+
+
+.nf-trigger-btn {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  cursor: pointer;
+  transition: none;
+  display: inline;
+  align-items: unset;
+  justify-content: unset;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
+}
+
+.nf-trigger-btn img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

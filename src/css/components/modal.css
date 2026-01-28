@@ -1,0 +1,134 @@
+/*
+====================================================
+  MODAL & OVERLAY
+====================================================*/
+.nf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 34, 90, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nf-modal-centerbox {
+  background: var(--bg-white);
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--box-shadow-heavy);
+  padding: 2rem 2.5rem 3.5rem 2.5rem;
+  min-width: 350px;
+  max-width: 1200px;
+  width: 90vw;
+  max-height: 90vh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  gap: 0;
+}
+
+.nf-modal-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-light) 0%, var(--border-medium) 100%);
+  margin: 2.5rem 0 2rem 0;
+  border: none;
+}
+
+.nf-modal-header {
+  text-align: center;
+}
+
+.nf-modal-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.nf-modal-subtitle {
+  font-size: 1rem;
+  color: var(--secondary-medium);
+  margin: 0 auto 2rem auto;
+  text-align: center;
+  max-width: 800px;
+}
+
+.nf-modal-cards {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  margin-top: 0;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.nf-modal-centerbox .nf-section--knowledge {
+  margin-bottom: 0.5rem;
+}
+
+.nf-modal-centerbox .nf-modal-divider {
+  margin: 1.5rem 0 1.5rem 0;
+}
+
+/*
+====================================================
+  MODAL CLOSE BUTTON
+====================================================*/
+.nf-modal-closebtn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: none;
+  border: none;
+  color: var(--secondary-light);
+  font-size: 2rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nf-modal-closebtn:hover,
+.nf-modal-closebtn:focus {
+  background: var(--bg-gray);
+  color: var(--danger);
+}
+
+/* Sicherstellen, dass Modal-Container relative Position haben */
+.nf-login-container,
+.nf-newticket-container,
+.nf-ticketdetail-container,
+.nf-ticketlist-container,
+.nf-modal-centerbox {
+  position: relative;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 1200px) {
+  .nf-modal-centerbox {
+    max-width: 98vw;
+    width: 98vw;
+    padding: 1.2rem 0.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .nf-modal-centerbox {
+    min-width: 0;
+    max-width: 100vw;
+    width: 100vw;
+    border-radius: 0;
+    padding: 0.5rem 0.2rem;
+  }
+}

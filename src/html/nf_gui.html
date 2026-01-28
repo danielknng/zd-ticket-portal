@@ -1,0 +1,264 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="../css/main.css">
+<button id="nf-zammad-trigger" class="nf-trigger-btn" aria-label="">
+    <img src=""
+         alt=""
+         width="200" height="50">
+</button>
+<!-- Overlay & Modal (initially hidden) -->
+<div class="nf-modal-overlay nf-hidden" id="nf_modal_overlay" role="presentation" aria-hidden="true">
+    <div class="nf-modal-centerbox" role="dialog" aria-modal="true" aria-labelledby="nf_main_modal_title" tabindex="-1">
+        <button class="nf-modal-closebtn" id="nf_modal_closebtn_main" aria-label="">×</button>
+        <!-- Title and subtitle -->
+        <div class="nf-modal-header nf-modal-draghandle">
+            <h1 class="nf-modal-title" id="nf_main_modal_title"></h1>
+            <div class="nf-modal-subtitle"></div>
+        </div>
+        <!-- Search -->
+        <form class="nf-searchbar" autocomplete="off" onsubmit="return false;">
+            <input class="nf-search-input nf-search-input--wide" id="nf_search_input" type="text" placeholder="">
+            <div id="nf_search_dropdown" class="nf-search-dropdown"></div>
+        </form>
+        <!-- Card layout for sections -->
+        <div class="nf-modal-cards">
+            <div class="nf-card nf-card--knowledge">
+                <div class="nf-section-title"></div>
+                <div class="nf-section-desc"></div>
+                <div class="nf-section-btns">
+                    <a href="#" target="_blank" class="nf-section-btn nf-section-btn--knowledge" id="nf_knowledge_portal_link"></a>
+                </div>
+            </div>
+            <div class="nf-card nf-card--tickets">
+                <div class="nf-section-title"></div>
+                <div class="nf-section-desc"></div>
+                <div class="nf-section-btns">
+                    <button class="nf-section-btn nf-section-btn--ticketcreate" id="nf_btn_ticketcreate"></button>
+                    <button class="nf-section-btn nf-section-btn--ticketview" id="nf_btn_ticketview"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ticket list (shown via JS) -->
+<div class="nf-ticketlist-container nf-ticketlist-modal nf-hidden" id="nf_ticketlist_container" role="dialog" aria-modal="true" aria-labelledby="nf_ticketlist_title" tabindex="-1">
+    <button class="nf-modal-closebtn" id="nf_modal_closebtn_ticketlist" aria-label="Close ticket list">×</button>
+    <div class="nf-ticketlist-filters">
+        <select class="nf-ticketlist-filter" id="nf_filter_status">
+            <option value="active"></option>
+            <option value="closed"></option>
+            <option value="all"></option>
+        </select>
+        <select class="nf-ticketlist-sort" id="nf_sort">
+            <option value="date_desc"></option>
+            <option value="date_asc"></option>
+            <option value="status"></option>
+            <option value="subject"></option>
+        </select>
+        <select class="nf-ticketlist-year nf-hidden" id="nf_filter_year">
+            <!-- Years are dynamically inserted via JavaScript -->
+        </select>
+        <button class="nf-section-btn nf-section-btn--ticketview nf-ticketlist-reload" id="nf_ticketlist_reload" title="Reload tickets" aria-label="Reload tickets">Reload</button>
+    </div>
+    <table class="nf-ticketlist-table" id="nf_ticketlist_table">
+        <thead>
+            <tr class="nf-ticketlist-header">
+                <th class="nf-ticketlist-header-cell" data-sort="id"></th>
+                <th class="nf-ticketlist-header-cell" data-sort="subject" id="nf_ticketlist_title"></th>
+                <th class="nf-ticketlist-header-cell" data-sort="date_desc"></th>
+                <th class="nf-ticketlist-header-cell" data-sort="status"></th>
+            </tr>
+        </thead>
+        <tbody id="nf_ticketlist_body">
+            <!-- Tickets are inserted here via JS -->
+        </tbody>
+    </table>
+    <div class="nf-ticketlist-empty nf-hidden" id="nf_ticketlist_empty"></div>
+</div>
+
+<!-- Ticket detail view (shown via JS) -->
+<div class="nf-ticketdetail-container nf-ticketdetail-modal nf-hidden" id="nf_ticketdetail_container" role="dialog" aria-modal="true" aria-labelledby="nf_ticketdetail_title" tabindex="-1">
+    <button class="nf-modal-closebtn" id="nf_modal_closebtn_ticketdetail" aria-label="Close ticket details">×</button>
+    <div id="nf_ticketdetail_header">
+        <h2 id="nf_ticketdetail_title" class="nf-ticketdetail-title"></h2>
+    </div>
+    <div class="nf-ticketdetail-messages" id="nf_ticketdetail_messages"></div>
+    <!-- Reply section -->
+    <button class="nf-section-btn nf-section-btn--ticketcreate nf-ticketdetail-replytoggle" id="nf_ticketdetail_replytoggle"></button>
+    <div class="nf-ticketdetail-replybox" id="nf_ticketdetail_replybox">
+        <textarea class="nf-ticketdetail-replyinput" id="nf_ticketdetail_replyinput" placeholder=""></textarea>
+        <div class="nf-ticketdetail-replyactions">
+            <button class="nf-btn nf-btn--primary" id="nf_ticketdetail_replybtn"></button>
+            <button class="nf-btn nf-btn--danger" id="nf_ticketdetail_replycancel" type="button"></button>
+        </div>
+    </div>
+    <button class="nf-ticketdetail-replytoggle nf-btn--success" id="nf_ticketdetail_closebtn"></button>
+</div>
+
+<!-- Internal gallery view -->
+<div class="nf-gallery-overlay nf-hidden" id="nf_gallery_overlay" role="dialog" aria-modal="true" aria-label="">
+    <div class="nf-gallery-container">
+        <img class="nf-gallery-image" id="nf_gallery_image" src="" alt="">
+        <button class="nf-gallery-close" id="nf_gallery_close" aria-label="">×</button>
+        <button class="nf-gallery-navigation nf-gallery-nav-prev nf-hidden" id="nf_gallery_prev" aria-label=""></button>
+        <button class="nf-gallery-navigation nf-gallery-nav-next nf-hidden" id="nf_gallery_next" aria-label=""></button>
+        <div class="nf-gallery-info nf-hidden" id="nf_gallery_info"></div>
+    </div>
+</div>
+
+<!-- Login section -->
+<div class="nf-login-container nf-hidden" id="nf_login_container" role="dialog" aria-modal="true" aria-labelledby="nf_login_title" tabindex="-1">
+    <button class="nf-modal-closebtn" id="nf_modal_closebtn_login" aria-label="Close login">×</button>
+    <form class="nf-login-form" id="nf_login_form" autocomplete="on">
+        <h2 class="nf-login-title" id="nf_login_title"></h2>
+        <!-- Hint for Windows credentials -->
+        <div class="nf-login-hint nf-hidden" id="nf_login_hint"></div>
+        <div class="nf-login-group">
+            <label for="nf_login_user"></label>
+            <input id="nf_login_user" type="text" autocomplete="username" required placeholder="">
+        </div>
+        <div class="nf-login-group">
+            <label for="nf_login_pass"></label>
+            <input id="nf_login_pass" type="password" autocomplete="current-password" required placeholder="">
+        </div>
+        <!-- Warning for remaining login attempts -->
+        <div class="nf-login-warning nf-hidden" id="nf_login_warning"></div>
+        <!-- Lockout message -->
+        <div class="nf-login-lockout nf-hidden" id="nf_login_lockout"></div>
+        <button class="nf-btn nf-btn--primary" type="submit" id="nf_login_submit"></button>
+    </form>
+</div>
+
+<!-- New ticket creation -->
+<div class="nf-newticket-container nf-hidden" id="nf_new_ticket_container" role="dialog" aria-modal="true" aria-labelledby="nf_newticket_title" tabindex="-1">
+    <button class="nf-modal-closebtn" id="nf_modal_closebtn_newticket" aria-label="Close new ticket creation">×</button>
+    <form class="nf-newticket-form" id="nf_new_ticket_form" autocomplete="off">
+        <h2 class="nf-newticket-title" id="nf_newticket_title"></h2>
+        <div class="nf-newticket-group">
+            <label for="nf_new_ticket_subject"></label>
+            <input id="nf_new_ticket_subject" type="text" required placeholder="">
+        </div>
+        <div class="nf-newticket-group">
+            <label for="nf_new_ticket_body"></label>
+            <textarea id="nf_new_ticket_body" required placeholder=""></textarea>
+        </div>
+        <div class="nf-newticket-group">
+            <label for="nf_new_ticket_attachment"></label>
+            <div class="file-upload">
+                <label class="file-upload-label">
+                    <span class="upload-text"></span>
+                    <input id="nf_new_ticket_attachment" type="file" multiple>
+                </label>
+            </div>
+            <div class="file-preview-container" id="nf_file_preview_container">
+                <div class="file-preview-list" id="nf_file_preview_list"></div>
+            </div>
+        </div>
+        <div class="nf-btn-row">
+            <button class="nf-btn nf-btn--primary" type="submit"></button>
+            <button class="nf-btn nf-btn--secondary" type="button" id="nf_btn_cancel_newticket"></button>
+        </div>
+    </form>
+</div>
+
+<!-- Status message -->
+<div class="nf-status-msg nf-hidden" id="nf_status_msg"></div>
+
+<!-- Loader -->
+<div class="nf-loader nf-hidden" id="nf_loader">
+    <div class="loader"></div>
+</div>
+
+<!-- Templates for dynamic UI elements -->
+<div class="nf-template" id="nf_ticketlist_row_template">
+  <table><tbody>
+    <tr class="nf-ticketlist-row">
+      <td class="nf-ticketlist-cell nf-ticketlist-cell--id nf-center-text"></td>
+      <td class="nf-ticketlist-cell nf-ticketlist-cell--subject"></td>
+      <td class="nf-ticketlist-cell nf-ticketlist-cell--created nf-center-text"></td>
+      <td class="nf-ticketlist-cell nf-ticketlist-cell--status nf-center-text">
+        <span class="nf-ticketlist-status"></span>
+      </td>
+    </tr>
+  </tbody></table>
+</div>
+<div class="nf-template" id="nf_ticketdetail_header_template">
+  <div class="nf-ticketdetail-headercard nf-ticketdetail-headercard--fullwidth">
+    <div class="nf-ticketdetail-headerinfo">
+      <div class="nf-ticketdetail-title-row">
+        <div class="nf-ticketdetail-title"></div>
+        <div class="nf-ticketdetail-status"></div>
+      </div>
+      <div class="nf-ticketdetail-meta-row">
+        <div class="nf-ticketdetail-date"></div>
+        <div class="nf-ticketdetail-ticket-number"></div>
+      </div>
+      <div class="nf-ticketdetail-updated-row">
+        <div class="nf-ticketdetail-updated-date"></div>
+        <div class="nf-ticketdetail-processor"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="nf-template" id="nf_ticketdetail_message_template">
+  <div class="nf-ticketdetail-message">
+    <div class="nf-ticketdetail-message-header"></div>
+    <div class="nf-ticketdetail-message-body"></div>
+    <div class="nf-ticketdetail-attachments"></div>
+  </div>
+</div>
+<div class="nf-template" id="nf_search_result_template">
+  <div class="nf-search-result">
+    <a class="nf-search-result-title" role="heading" aria-level="3" target="_blank" rel="noopener"></a>
+    <div class="nf-search-result-summary"></div>
+  </div>
+</div>
+
+<!-- JS: Modular JavaScript files for the new frontend -->
+<!-- Base modules -->
+<script src="../js/nf-config.js"></script>
+<script src="../js/nf-utils.js"></script>
+<script src="../js/nf-cache.js"></script>
+
+<!-- Core modules (DOM and UI helpers) -->
+<script src="../js/nf-dom.js"></script>
+<script src="../js/nf-helpers.js"></script>
+
+<!-- API and UI modules -->
+<script src="../js/nf-api.js"></script>
+<script src="../js/nf-ui.js"></script>
+<script src="../js/nf-ui-init.js"></script>
+<script src="../js/nf-search.js"></script>
+<script src="../js/nf-gallery.js"></script>
+
+<!-- Ticket modules (depend on core and API modules) -->
+<script src="../js/nf-ticket-list.js"></script>
+<script src="../js/nf-ticket-detail.js"></script>
+<script src="../js/nf-ticket-actions.js"></script>
+
+<!-- Events (must be loaded last to link all functions) -->
+<script src="../js/nf-events.js"></script>
+
+<!-- Apply configuration after all modules are loaded -->
+<script>
+// UI initialization with configuration values
+// Ensure all configuration values are transferred to the UI
+// Accessibility: Enable close buttons via keyboard
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.NF_UI_INIT) {
+        window.NF_UI_INIT.init();
+    } else {
+        console.error('NF_UI_INIT not available - UI initialization failed');
+    }
+    const closeBtns = document.querySelectorAll('.nf-modal-closebtn');
+    closeBtns.forEach(btn => {
+        btn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                btn.click();
+            }
+        });
+    });
+});
+</script>

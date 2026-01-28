@@ -1,0 +1,9 @@
+/*
+====================================================
+  GLOBAL FONTS
+====================================================*/
+* {
+  font-family: Arial, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Font-family is inherited by * selector, so not needed for body */

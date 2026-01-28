@@ -1,0 +1,48 @@
+/*
+====================================================
+  BUTTONS
+====================================================*/
+.nf-btn {
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.nf-btn--primary {
+  background: var(--primary-medium);
+  color: var(--bg-white);
+}
+
+.nf-btn--secondary {
+  background: var(--bg-white);
+  color: var(--secondary-dark);
+  border: var(--border-width) solid var(--secondary-dark);
+}
+
+.nf-btn--danger {
+  background: var(--danger-alt);
+  color: var(--bg-white);
+}
+
+.nf-btn--success {
+  background: var(--success);
+  color: var(--bg-white);
+}
+
+.nf-btn--success:hover {
+  background: #1e7e34;
+  filter: brightness(0.9);
+}
+
+/* Mobile Anpassungen */
+@media (max-width: 600px) {
+  .nf-btn--close {
+    width: 100%;
+    padding: 0.8rem 0;
+    font-size: 1.05rem;
+  }
+}

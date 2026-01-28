@@ -1,0 +1,29 @@
+{
+  "ticketStates": {
+    "1": "Neu",
+    "2": "Offen",
+    "3": "Erinnerung ausstehend",
+    "4": "Geschlossen",
+    "5": "Zusammengeführt",
+    "7": "Schließung ausstehend",
+    "8": "Warten auf Kunde",
+    "9": "In Bearbeitung",
+    "10": "Warten auf extern"
+  },
+  "emailSeparators": [
+    "Von:",
+    "Gesendet:",
+    "An:",
+    "Betreff:",
+    "Mit freundlichen Grüßen",
+    "Freundliche Grüße",
+    "Abteilung",
+    "Telefon:"
+  ],
+  "login": {
+    "maxAttempts": 3,
+    "lockoutMessage": "Konto gesperrt. Bitte kontaktieren Sie den Support.",
+    "credentialsHint": "Verwende deine Windows-Anmeldedaten zur Anmeldung",
+    "attemptsWarningTemplate": "Fehler! Sind Benutzername/Passwort korrekt?"
+  }
+}

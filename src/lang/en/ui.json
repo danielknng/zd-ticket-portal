@@ -1,0 +1,74 @@
+{
+  "modalTitle": "How can we help?",
+  "modalSubtitle": "Search the knowledge portal or create a support ticket.",
+  "searchPlaceholder": "Search the knowledge portal…",
+  "closeButton": "Close",
+  "knowledgePortalTitle": "Knowledge Portal",
+  "knowledgePortalDesc": "Find answers to frequently asked questions",
+  "knowledgePortalButton": "To Knowledge Portal",
+  "ticketSystemTitle": "Ticket System",
+  "ticketSystemDesc": "Create or manage your support requests",
+  "createTicketButton": "Create Ticket",
+  "viewTicketsButton": "View My Tickets",
+  "ticketListFilters": {
+    "active": "Active Tickets",
+    "closed": "Closed Tickets",
+    "all": "All Tickets"
+  },
+  "ticketListSort": {
+    "date_desc": "Newest first",
+    "date_asc": "Oldest first",
+    "status": "By status",
+    "subject": "By subject"
+  },
+  "ticketListHeaders": {
+    "id": "#",
+    "subject": "Subject",
+    "created": "Created on",
+    "status": "Status"
+  },
+  "ticketListEmpty": "No tickets found.",
+  "reloadButton": "Reload",
+  "ticketDetailActions": {
+    "reply": "Reply",
+    "replyPlaceholder": "Your reply...",
+    "sendReply": "Send reply",
+    "cancelReply": "Cancel",
+    "closeTicket": "Mark ticket as resolved",
+    "attachFiles": "Attach files..."
+  },
+  "ticketDetailCreated": "Created:",
+  "ticketDetailNumber": "Ticket No.",
+  "ticketDetailLastUpdated": "Last updated:",
+  "galleryAlt": "Attachment",
+  "unknownStatus": "Unknown",
+  "loginTitle": "Login",
+  "loginLabels": {
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "Username",
+    "passwordPlaceholder": "Password",
+    "submitButton": "Login"
+  },
+  "loginErrors": {
+    "missingCredentials": "Username and password are required",
+    "invalidCredentials": "Invalid login credentials",
+    "accountLocked": "Account locked",
+    "networkError": "Network error during login",
+    "serverError": "Server error during login"
+  },
+  "newTicketTitle": "Create new ticket",
+  "newTicketLabels": {
+    "requestType": "Request type",
+    "requestTypePlaceholder": "Please choose a request type",
+    "requestTypeLoadError": "Request types could not be loaded. You can still submit your ticket.",
+    "subject": "Subject",
+    "subjectPlaceholder": "A short summary of your request",
+    "body": "Message",
+    "bodyPlaceholder": "Describe your request...",
+    "attachment": "File attachment (optional)",
+    "attachmentText": "📎 Drag files here or click to select",
+    "submitButton": "Submit ticket",
+    "cancelButton": "Cancel"
+  }
+}

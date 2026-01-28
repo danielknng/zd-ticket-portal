@@ -1,0 +1,11 @@
+{
+  "ticketCreated": "Ticket wurde erfolgreich erstellt!",
+  "missingFields": "Bitte füllen Sie alle Pflichtfelder aus.",
+  "fileValidationFailed": "Datei-Überprüfung fehlgeschlagen.",
+  "missingCredentials": "Benutzername und Passwort sind erforderlich",
+  "lockoutMessage": "Konto gesperrt. Bitte kontaktieren Sie den Support.",
+  "invalidCredentials": "Ungültige Anmeldedaten",
+  "attemptsWarning": "Fehler! Sind Benutzername/Passwort korrekt?",
+  "authFailed": "Authentifizierung fehlgeschlagen ({status})",
+  "credentialsHint": "Verwende deine Windows-Anmeldedaten zur Anmeldung"
+}

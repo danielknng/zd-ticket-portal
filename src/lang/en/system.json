@@ -1,0 +1,29 @@
+{
+  "ticketStates": {
+    "1": "New",
+    "2": "Open",
+    "3": "Pending reminder",
+    "4": "Closed",
+    "5": "Merged",
+    "7": "Pending close",
+    "8": "Waiting for customer",
+    "9": "In progress",
+    "10": "Waiting for external"
+  },
+  "emailSeparators": [
+    "From:", 
+    "Sent:",
+    "To:",
+    "Subject:",
+    "Best regards",
+    "Kind regards",
+    "Department",
+    "Phone:"
+  ],
+  "login": {
+    "maxAttempts": 3,
+    "lockoutMessage": "Account locked. Please contact support.",
+    "credentialsHint": "Use your Windows credentials to log in",
+    "attemptsWarningTemplate": "Error! Is the username/password correct?"
+  }
+}

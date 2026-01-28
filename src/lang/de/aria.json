@@ -1,0 +1,13 @@
+{
+  "closeMainDialog": "Hauptdialog schließen",
+  "closeTicketList": "Ticket-Liste schließen",
+  "closeTicketDetails": "Ticket-Details schließen",
+  "closeGallery": "Galerie schließen",
+  "previousImage": "Vorheriges Bild",
+  "nextImage": "Nächstes Bild",
+  "closeLogin": "Anmeldung schließen",
+  "closeNewTicket": "Ticket-Erstellung schließen",
+  "galleryView": "Galerieansicht",
+  "openTicket": "Ticket öffnen: {title}",
+  "openArticle": "Artikel öffnen: {title}"
+}

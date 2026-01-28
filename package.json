@@ -1,0 +1,45 @@
+{
+  "name": "zd-ticket-portal",
+  "version": "1.0.0",
+  "description": "A modular, internationalized frontend for Zammad-based ticket systems",
+  "main": "src/html/nf_gui.html",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve . -p 3000",
+    "serve": "npx serve .",
+    "start": "npx serve . -p 3000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DanielKng/zd-ticket-portal.git"
+  },
+  "keywords": [
+    "zammad",
+    "helpdesk",
+    "ticket-system",
+    "frontend",
+    "modal",
+    "javascript",
+    "es6-modules",
+    "internationalization",
+    "responsive"
+  ],
+  "author": "danielknng",
+  "license": "CC-BY-NC-SA-4.0",
+  "bugs": {
+    "url": "https://github.com/DanielKng/zd-ticket-portal/issues"
+  },
+  "homepage": "https://github.com/DanielKng/zd-ticket-portal#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "serve": "^14.0.0"
+  },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions"
+  ]
+}

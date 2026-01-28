@@ -1,0 +1,12 @@
+{
+  "localStorageWriteFailed": "LocalStorage write failed",
+  "localStorageReadFailed": "LocalStorage read failed",
+  "localStorageRemoveFailed": "LocalStorage remove failed",
+  "fileTooLarge": "File too large. Maximum: {max}MB",
+  "fileTypeNotAllowed": "File type not allowed",
+  "retryAttemptFailed": "Attempt {attempt} failed",
+  "performanceMarkNotFound": "Performance mark not found: {mark}",
+  "ticketListLoadError": "Error loading tickets: ",
+  "ticketListFilterError": "Error filtering tickets: ",
+  "ticketListStatusSpanMissing": "statusSpan not found in ticket row template"
+}

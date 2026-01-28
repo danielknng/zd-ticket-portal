@@ -1,0 +1,12 @@
+{
+  "localStorageWriteFailed": "LocalStorage-Schreibvorgang fehlgeschlagen",
+  "localStorageReadFailed": "LocalStorage-Lesevorgang fehlgeschlagen",
+  "localStorageRemoveFailed": "LocalStorage-Löschvorgang fehlgeschlagen",
+  "fileTooLarge": "Datei zu groß. Maximum: {max}MB",
+  "fileTypeNotAllowed": "Dateityp nicht erlaubt",
+  "retryAttemptFailed": "Versuch {attempt} fehlgeschlagen",
+  "performanceMarkNotFound": "Performance-Markierung nicht gefunden: {mark}",
+  "ticketListLoadError": "Fehler beim Laden der Tickets: ",
+  "ticketListFilterError": "Fehler beim Filtern der Tickets: ",
+  "ticketListStatusSpanMissing": "statusSpan nicht in Ticket-Zeilen-Vorlage gefunden"
+}

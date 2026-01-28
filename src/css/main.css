@@ -1,0 +1,89 @@
+/*
+====================================================
+  NF STYLES - MAIN FILE
+  Ticket Frontend Styles - Modular structure
+====================================================*/
+
+/* Base Styles */
+@import url('base/variables.css');
+@import url('base/typography.css');
+@import url('base/utilities.css');
+
+/* Components */
+@import url('components/buttons.css');
+@import url('components/forms.css');
+@import url('components/modal.css');
+@import url('components/status-badges.css');
+@import url('components/loader.css');
+
+/* Modules */
+@import url('modules/login.css');
+@import url('modules/search.css');
+@import url('modules/ticket-list.css');
+@import url('modules/ticket-detail.css');
+@import url('modules/new-ticket.css');
+@import url('modules/gallery.css');
+
+/* Layout */
+@import url('layout/sections.css');
+@import url('layout/cards.css');
+
+/*
+====================================================
+  MEDIA QUERIES (Global responsive adjustments)
+====================================================*/
+@media (max-width: 1200px) {
+  .nf-modal-centerbox {
+    max-width: 98vw;
+    width: 98vw;
+    padding: 1.2rem 0.5rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .nf-modal-centerbox {
+    min-width: 0;
+    max-width: 100vw;
+    width: 100vw;
+    border-radius: 0;
+    padding: 0.5rem 0.2rem;
+  }
+  
+  .nf-newticket-container {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .nf-ticketdetail-modal {
+    max-width: 99vw;
+    width: 99vw;
+    padding: 1rem 0.2rem;
+    border-radius: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .nf-login-container {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+  
+  .nf-ticketlist-modal {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+  
+  .nf-btn--close {
+    width: 100%;
+    padding: 0.8rem 0;
+    font-size: 1.05rem;
+  }
+}

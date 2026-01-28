@@ -1,0 +1,13 @@
+{
+  "closeMainDialog": "Close main dialog",
+  "closeTicketList": "Close ticket list",
+  "closeTicketDetails": "Close ticket details",
+  "closeGallery": "Close gallery",
+  "previousImage": "Previous image",
+  "nextImage": "Next image",
+  "closeLogin": "Close login",
+  "closeNewTicket": "Close new ticket creation",
+  "galleryView": "Gallery view",
+  "openTicket": "Open ticket: {title}",
+  "openArticle": "Open article: {title}"
+}

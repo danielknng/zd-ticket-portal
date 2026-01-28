@@ -1,0 +1,74 @@
+{
+  "modalTitle": "Wie können wir dir helfen?",
+  "modalSubtitle": "Durchsuche das Wissensportal oder erstelle ein Support-Ticket.",
+  "searchPlaceholder": "Wissensportal durchsuchen…",
+  "closeButton": "Schließen",
+  "knowledgePortalTitle": "Wissensportal",
+  "knowledgePortalDesc": "Finde Antworten auf häufig gestellte Fragen",
+  "knowledgePortalButton": "Zum Wissensportal",
+  "ticketSystemTitle": "Ticket-System",
+  "ticketSystemDesc": "Erstelle oder verwalte deine Support-Anfragen",
+  "createTicketButton": "Ticket erstellen",
+  "viewTicketsButton": "Meine Tickets anzeigen",
+  "ticketListFilters": {
+    "active": "Aktive Tickets",
+    "closed": "Geschlossene Tickets",
+    "all": "Alle Tickets"
+  },
+  "ticketListSort": {
+    "date_desc": "Neueste zuerst",
+    "date_asc": "Älteste zuerst",
+    "status": "Nach Status",
+    "subject": "Nach Betreff"
+  },
+  "ticketListHeaders": {
+    "id": "#",
+    "subject": "Betreff",
+    "created": "Erstellt am",
+    "status": "Status"
+  },
+  "ticketListEmpty": "Keine Tickets gefunden.",
+  "reloadButton": "Neu laden",
+  "ticketDetailActions": {
+    "reply": "Antworten",
+    "replyPlaceholder": "Deine Antwort...",
+    "sendReply": "Antwort senden",
+    "cancelReply": "Abbrechen",
+    "closeTicket": "Ticket als gelöst markieren",
+    "attachFiles": "Dateien anhängen..."
+  },
+  "ticketDetailCreated": "Erstellt am:",
+  "ticketDetailNumber": "Ticket Nr.",
+  "ticketDetailLastUpdated": "Zuletzt aktualisiert:",
+  "galleryAlt": "Anhang",
+  "unknownStatus": "Unbekannt",
+  "loginTitle": "Anmeldung",
+  "loginLabels": {
+    "username": "Benutzername",
+    "password": "Passwort",
+    "usernamePlaceholder": "Benutzername",
+    "passwordPlaceholder": "Passwort",
+    "submitButton": "Anmelden"
+  },
+  "loginErrors": {
+    "missingCredentials": "Benutzername und Passwort sind erforderlich",
+    "invalidCredentials": "Ungültige Anmeldedaten",
+    "accountLocked": "Konto gesperrt",
+    "networkError": "Netzwerkfehler bei der Anmeldung",
+    "serverError": "Serverfehler bei der Anmeldung"
+  },
+  "newTicketTitle": "Neues Ticket erstellen",
+  "newTicketLabels": {
+    "requestType": "Anfrageart",
+    "requestTypePlaceholder": "Bitte wähle eine Anfrageart",
+    "requestTypeLoadError": "Die Anfragearten konnten nicht geladen werden. Du kannst dein Ticket trotzdem absenden.",
+    "subject": "Betreff",
+    "subjectPlaceholder": "Eine kurze Zusammenfassung deiner Anfrage",
+    "body": "Nachricht",
+    "bodyPlaceholder": "Beschreibe deine Anfrage...",
+    "attachment": "Dateianhang (optional)",
+    "attachmentText": "📎 Dateien hier hinziehen oder klicken zum Auswählen",
+    "submitButton": "Ticket einreichen",
+    "cancelButton": "Abbrechen"
+  }
+}

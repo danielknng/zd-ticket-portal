@@ -1,0 +1,64 @@
+/*
+====================================================
+  CSS CUSTOM PROPERTIES (VARIABLES)
+====================================================*/
+:root {
+  /* Primary Colors */
+  --primary-dark: #3a3377;      /* Main dark blue */
+  --primary-medium: #3a4fa3;    /* Main blue */
+  --primary-light: #4b5fc9;     /* Light blue (knowledge portal) */
+  
+  /* Secondary Colors */
+  --secondary-dark: #1e225a;    /* Dark text */
+  --secondary-medium: #6b6b8d;  /* Medium text */
+  --secondary-light: #7e8aa7;   /* Light text */
+    
+  /* Status Colors */
+  --success: #28a745;           /* Success messages */
+  --danger: #dc3545;            /* Error messages */
+  --warning: #ffc107;           /* Warnings */
+  --info: #17a2b8;              /* Information */
+  --danger-alt: #DC4C64;        /* Alternative danger color */
+  
+  /* Background Colors */
+  --bg-white: #fff;
+  --bg-light: #f8f9fc;
+  --bg-lighter: #f7f8fa;
+  --bg-lightest: #f5f7fb;
+  --bg-gray: #f3f6fc;
+  
+  /* Border Colors */
+  --border-light: #e3e8f7;
+  --border-medium: #bfc7e0;
+  --border-dark: #bfc2e2;
+    
+  /* Ticket Status Colors */
+  --status-new: #ffb347;        /* Orange for new tickets */
+  --status-open: #3a4fa3;       /* Blue for open tickets */
+  --status-progress: #3ec97a;   /* Green for in progress */
+  --status-waiting: #7e8aa7;    /* Gray for waiting tickets */
+  --status-closed: #dc3545;     /* Red for closed tickets */
+  --status-merged: #bfc7e0;     /* Light gray for merged */
+  
+  /* Utility Colors */
+  --text-dark: #2d2d4d;         /* Dark text */
+  --text-medium: #2d2d5a;       /* Medium-dark text */
+  --border-focus: #5a5e9a;      /* Border on focus */
+  --border-separator: #f0f0f0;  /* Light separators */
+  --highlight-bg: #eaf1ff;      /* Highlight background */
+  --table-header-bg: #f0f2fa;   /* Table header */
+  --table-hover-bg: #f5f7fd;    /* Table hover */
+  --upload-hover-bg: #f0f4ff;   /* Upload hover background */
+  
+  /* Commonly Used Values */
+  --border-radius-small: 8px;
+  --border-radius-medium: 12px;
+  --border-radius-large: 18px;
+  --border-width: 1.5px;
+  --box-shadow-light: 0 2px 8px rgba(30,34,90,0.04);
+  --box-shadow-medium: 0 4px 18px rgba(30,34,90,0.10);
+  --box-shadow-heavy: 0 8px 32px rgba(30,34,90,0.18);
+  --transition-fast: 0.15s;
+  --transition-medium: 0.2s;
+  --transition-slow: 0.3s;
+}

@@ -1,0 +1,132 @@
+/*
+====================================================
+  FORMS & INPUTS
+====================================================*/
+/* Common input styles */
+.nf-input {
+  padding: 0.8rem 0.7rem;
+  border-radius: var(--border-radius-small);
+  border: var(--border-width) solid var(--border-medium);
+  background: var(--bg-white);
+  color: #222;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border var(--transition-medium), background var(--transition-medium), box-shadow var(--transition-medium);
+  line-height: 1.5;
+}
+
+.nf-input:focus {
+  border: var(--border-width) solid var(--primary-medium);
+  outline: none;
+  background: var(--bg-white);
+  box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+}
+
+/* File Preview Styles */
+.file-preview-container {
+  margin-top: 1rem;
+}
+
+.file-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.file-preview-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-small);
+  background: var(--bg-lightest);
+  min-width: 80px;
+  max-width: 120px;
+  transition: all var(--transition-medium);
+}
+
+.file-preview-item:hover {
+  border-color: var(--primary-light);
+  background: var(--bg-light);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-preview-thumbnail {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+}
+
+.file-preview-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  background: var(--bg-light);
+}
+
+.file-preview-icon--pdf { background: #ff4444; color: white; }
+.file-preview-icon--doc { background: #1e40af; color: white; }
+.file-preview-icon--excel { background: #16a34a; color: white; }
+.file-preview-icon--powerpoint { background: #dc2626; color: white; }
+.file-preview-icon--text { background: #6b7280; color: white; }
+.file-preview-icon--archive { background: #7c3aed; color: white; }
+.file-preview-icon--default { background: var(--secondary-light); color: white; }
+
+.file-preview-name {
+  font-size: 0.75rem;
+  color: var(--secondary-dark);
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+  max-height: 2.4em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.file-preview-size {
+  font-size: 0.65rem;
+  color: var(--secondary-medium);
+  margin-top: 0.25rem;
+}
+
+.file-preview-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--danger-medium);
+  color: var(--secondary-light);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.file-preview-remove:hover {
+  background: var(--danger-dark);
+  transform: scale(1.1);
+}
+
+.file-preview-remove:active {
+  transform: scale(0.95);
+}

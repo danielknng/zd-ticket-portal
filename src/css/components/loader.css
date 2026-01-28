@@ -1,0 +1,47 @@
+/*
+====================================================
+  LOADER
+====================================================*/
+.nf-loader {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.8);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: var(--primary-medium);
+  pointer-events: all;
+}
+
+.nf-loader.nf-hidden {
+  display: none !important;
+}
+
+/* Spinner Animation */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-light);
+  border-top: 4px solid var(--primary-medium);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.nf-loader-fix {
+  display: none !important;
+}
+
+.nf-loader-fix .nf-center {
+  display: none !important;
+}
+
+.nf-loader-fix .nf-loader {
+  display: none !important;
+}

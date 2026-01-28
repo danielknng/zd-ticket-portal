@@ -1,0 +1,11 @@
+{
+  "ticketCreated": "Ticket was created successfully!",
+  "missingFields": "Please fill in all required fields.",
+  "fileValidationFailed": "File validation failed.",
+  "missingCredentials": "Username and password are required",
+  "lockoutMessage": "Account locked. Please contact support.",
+  "invalidCredentials": "Invalid login credentials",
+  "attemptsWarning": "Error! Is the username/password correct?",
+  "authFailed": "Authentication failed ({status})",
+  "credentialsHint": "Use your Windows credentials to log in"
+}

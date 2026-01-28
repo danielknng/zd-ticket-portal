@@ -1,0 +1,112 @@
+/*
+====================================================
+  LOGIN
+====================================================*/
+.nf-login-container {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2001;
+  max-width: 350px;
+  margin: 0;
+  background: var(--bg-white);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow-medium);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nf-login-group {
+  width: 100%;
+  margin-bottom: 1.1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.nf-login-group label {
+  font-size: 1rem;
+  color: var(--secondary-dark);
+  margin-bottom: 0.3rem;
+}
+
+.nf-login-group input[type="text"],
+.nf-login-group input[type="password"] {
+  padding: 0.8rem 1.2rem;
+  border-radius: var(--border-radius-small);
+  border: var(--border-width) solid var(--border-medium);
+  font-size: 1rem;
+  background: var(--bg-lighter);
+  margin-bottom: 0.7rem;
+}
+
+.nf-login-form .nf-btn[type="submit"] {
+  margin-top: 0.7rem;
+  width: 100%;
+  background: var(--primary-dark);
+  color: var(--bg-white);
+}
+
+.nf-login-title {
+  color: var(--primary-dark);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  text-align: left;
+  width: 100%;
+}
+
+/* ===============================
+   LOGIN HINTS AND WARNINGS
+   ===============================*/
+.nf-login-hint {
+  background-color: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 4px;
+  color: #0066cc;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding: 0.8rem;
+  text-align: center;
+}
+
+.nf-login-warning {
+  background-color: #fff2f2;
+  border: 1px solid #ffb3b3;
+  border-radius: 4px;
+  color: #d63031;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0.8rem 0;
+  padding: 1rem;
+  text-align: center;
+}
+
+.nf-login-lockout {
+  background-color: #ffe6e6;
+  border: 2px solid #ff4757;
+  border-radius: 4px;
+  color: #c0392b;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0.8rem 0;
+  padding: 1.2rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(255, 71, 87, 0.2);
+}
+
+.nf-modal-overlay .nf-login-container {
+  display: flex;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .nf-login-container {
+    width: 98vw;
+    max-width: 98vw;
+    padding: 1.2rem 0.5rem;
+    border-radius: 0;
+  }
+}

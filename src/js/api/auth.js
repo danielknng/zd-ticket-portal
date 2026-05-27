@@ -39,7 +39,7 @@ export class AuthService {
         return withPerformance(
             withErrorHandling(async () => {
                 const cleanUsername = username.trim();
-                const cleanPassword = password.trim();
+                const cleanPassword = password;
 
                 if (!cleanUsername || !cleanPassword) {
                     const errorMessage = this._getMessage('missingCredentials');

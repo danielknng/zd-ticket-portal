@@ -233,6 +233,7 @@ You can integrate the portal into an intranet/CMS (tested with Contao).
 ### Required markup
 
 The JavaScript expects the IDs and templates from `src/html/nf_gui.html` (especially `#nf-zammad-trigger` and all modal containers). 
+
 Use the content from the HTML-File (mostly) *unchanged* (*see the Contao-example below!*).
 
 <details>

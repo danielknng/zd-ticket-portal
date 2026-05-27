@@ -59,6 +59,7 @@
 }
 
 .nf-newticket-form input[type="text"],
+.nf-newticket-form select,
 .nf-newticket-form textarea {
   border: var(--border-width) solid var(--border-medium);
   border-radius: var(--border-radius-small);
@@ -73,11 +74,24 @@
 }
 
 .nf-newticket-form input[type="text"]:focus,
+.nf-newticket-form select:focus,
 .nf-newticket-form textarea:focus {
   border: var(--border-width) solid var(--primary-medium);
   outline: none;
   background: var(--bg-white);
   box-shadow: 0 0 0 3px rgba(45, 108, 223, 0.1);
+}
+
+.nf-newticket-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 2.4rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23667' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 12px 8px;
 }
 
 .nf-newticket-form textarea {

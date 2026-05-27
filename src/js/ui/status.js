@@ -157,13 +157,13 @@ export function getOrCreateStatusElement(modalType) {
         'main': dom.start
     };
     const container = modalContainers[modalType];
-    if (!container) return null;
-    
-    let statusElement = container.querySelector('.nf-status-msg');
-    if (!statusElement) {
-        return null;
+    if (container) {
+        const modalStatus = container.querySelector('.nf-status-msg');
+        if (modalStatus) return modalStatus;
     }
-    return statusElement;
+
+    // Fallback to the global status popup used by current HTML layout.
+    return dom.statusMsg || null;
 }
 
 /**

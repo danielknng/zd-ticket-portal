@@ -34,10 +34,11 @@ A modular, internationalized frontend for Zammad-based ticket systems that provi
 ## Table of Contents
 
 - [Overview](#overview)
+- [Quick Start](#quick-start)
 - [Features](#features)
 - [Installation](#installation)
+- [Embedding in an Existing Site](#embedding-in-an-existing-site)
 - [Configuration](#configuration)
-- [Zammad Setup](#zammad-setup)
 - [Usage](#usage)
 - [Technical Architecture](#technical-architecture)
 - [Development](#development)
@@ -49,21 +50,30 @@ A modular, internationalized frontend for Zammad-based ticket systems that provi
 
 ## Overview
 
-This project provides a clean, modal-based interface for Zammad ticket systems that can be easily integrated into existing websites or intranets. It replaces the default Zammad interface with a more user-friendly experience while maintaining full functionality.
-
-**Key Benefits:**
-- Modern, responsive design that works on all devices
-- Easy integration into existing websites via modal overlay
-- Multi-language support (English/German, easily extensible)
-- Smart caching for better performance
-- File upload with drag-and-drop support
-- Request type selection for ticket categorization
+This project is a modal frontend for Zammad tickets.
+You host it on a web server, configure `src/js/core/config.js`, and users open it through the trigger button from `src/html/nf_gui.html`.
 
 ### Module Requirements
 
 **This project uses ES6 modules and requires a web server** - it cannot be opened directly by double-clicking the HTML file.
 
-> **Don't want npx or a webserver?** Check the [`legacy`](https://github.com/danielknng/zd-ticket-portal/tree/legacy) branch for a version that opens directly in browsers, locally. It's now deprecated, but has most of the functionality this `main`-Version has.
+---
+
+## Quick Start
+
+The standard setup is exactly this:
+
+1. Edit `src/js/core/config.js`
+2. Enable Basic Authentication in Zammad
+3. Test locally:
+
+```powershell
+cd "C:\path\to\zd-ticket-portal"
+npx serve .
+# Open http://localhost:3000/src/html/nf_gui.html
+```
+
+If this works locally, head to [Installation](#installation).
 
 ---
 
@@ -99,39 +109,162 @@ This project provides a clean, modal-based interface for Zammad ticket systems t
 ### Prerequisites
 
 - A web server (cannot run via `file://` protocol due to ES6 module restrictions)
-- Zammad instance with Basic Authentication enabled
+- Zammad instance with Basic Authentication enabled (See [Zammad Setup](#zammad-setup))
 - Modern web browser with ES6 module support
 
-### Local Development Setup
-
-**Option 1: Using npx serve (Recommended)**
-
-```powershell
-# Navigate to the project root directory
-cd "C:\path\to\zd-ticket-portal"
-
-# Start a local web server
-npx serve .
-
-# Open http://localhost:3000/src/html/nf_gui.html in your browser
-```
-
-**Option 2: Deploy to Web Server**
+### Production use
 
 Upload all files to your web server and access via HTTP/HTTPS. This is the recommended approach for production use.
 
-### Integration with CMS Systems
+When the portal is embedded on a **different** domain/subdomain as your Zammad instance, reverse-proxy CORS handling is required.
 
-**Contao CMS** (tested with the [`legacy`](https://github.com/DanielKng/zd-ticket-portal/tree/legacy) branch)
+<details>
+<summary>Required reverse proxy config (Nginx)</summary>
 
-1. Upload all files to your server
-2. Place the contents of `src/html/nf_gui.html` in a new Contao article
-3. Adjust file paths to match your server structure
-4. Remove `<meta charset="utf-8">` in `nf_gui.html` for Contao compatibility
+Without this, your browser will likely not let you log in because we need to set the CORS header.
+Add this block directly above(!) `location /ws {}` in `/etc/nginx/sites-available/zammad.conf` on your Zammad server:
 
-**Other CMS Systems**
+```nginx
+# API-Server CORS (for Intranet-Portal)
+location ^~ /api/ {
 
-The portal works as a self-contained modal that can be embedded in any modern web environment. Simply include the HTML file and adjust the JavaScript paths accordingly.
+  # remove upstream CORS Header
+  proxy_hide_header Access-Control-Allow-Origin;
+  proxy_hide_header Access-Control-Allow-Headers;
+  proxy_hide_header Access-Control-Allow-Methods;
+  proxy_hide_header Access-Control-Allow-Credentials;
+
+  # only allow these origins
+  set $cors_origin "";
+  if ($http_origin = "http://localhost:3000") { set $cors_origin $http_origin; } # local testing (npx serve)
+  if ($http_origin = "https://intranet.yourdomain.de") { set $cors_origin $http_origin; } # the domain where you've embedded the portal
+  if ($http_origin = "https://helpdesk.yourdomain.de") { set $cors_origin $http_origin; } # URL of the zammad instance
+
+  # CORS Header (also for 204)
+  add_header Vary "Origin" always;
+  add_header Access-Control-Allow-Origin $cors_origin always;
+  add_header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" always;
+  add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With, X-CSRF-Token" always;
+  add_header Access-Control-Max-Age "86400" always;
+
+  # Preflight without Proxy
+  if ($request_method = OPTIONS) {
+    return 204;
+  }
+
+  proxy_http_version 1.1;
+  proxy_set_header Host $http_host;
+  proxy_set_header CLIENT_IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+  proxy_read_timeout 180;
+  proxy_pass http://zammad-railsserver;
+}
+```
+
+Restart your nginx.
+</details>
+
+### Zammad Setup
+
+#### Basic Authentication
+
+**Required:** Ensure Basic Authentication is enabled in your Zammad instance. This is typically configured in your Zammad system settings or via API configuration.
+
+#### Request Type Custom Object (**NEW**!)
+
+To enable request type selection in the ticket creation form, you must configure a custom object attribute in Zammad:
+
+1. **Log in to Zammad Admin Panel**
+
+2. **Navigate to Object Manager**
+   - Go to **Settings** > **Object Manager Attributes**
+   - Or access directly via: `https://helpdesk.yourdomain.de/#system/object_manager`
+
+3. **Create New Attribute**
+   - Click **New Attribute**
+   - Select **Ticket** as the object
+   - Set the attribute name to: **`type`** (exactly, case-sensitive)
+   - Choose **Single selection field** as the data type
+
+4. **Configure Options**
+   - Add your request type options (e.g., "General Request", "Incident", "Order")
+   - Each option needs:
+     - **Name**: Display label (e.g., "General Request")
+     - **Value**: Database key (e.g., "general_request")
+   - Set a default value if desired
+
+5. **Example Configuration**
+   ```
+   Option 1:
+   - Name: "General Request"
+   - Value: "general_request"
+   
+   Option 2:
+   - Name: "Incident"
+   - Value: "problem"
+   
+   Option 3:
+   - Name: "Order"
+   - Value: "procurement"
+   ```
+
+6. **Verify API Access**
+   - Test the API endpoint: `https://helpdesk.yourdomain.de/api/v1/object_manager_attributes?object=Ticket&name=type`
+   - Should return the attribute configuration with all options
+
+7. **Configure Frontend**
+   - Set `allowRequestType: true` in `src/js/core/config.js`
+   - Optionally filter allowed types in `filters.allowedRequestTypes`
+   - The dropdown will automatically populate with available options
+
+**Important Notes:**
+- The attribute name must be exactly `type` (lowercase)
+- The attribute must be a "Single selection field" type
+- Values in `allowedRequestTypes` must match the `value` field from the API, not the display name
+- Changes to request types in Zammad will be reflected after cache expiration
+
+---
+
+## Embedding in an Existing Site
+
+You can integrate the portal into an intranet/CMS (tested with Contao).
+
+### Required markup
+
+The JavaScript expects the IDs and templates from `src/html/nf_gui.html` (especially `#nf-zammad-trigger` and all modal containers).
+Use the content from the HTML-File (mostly) *unchanged* (see the Contao-example below).
+
+#### Contao (example)
+
+For Contao, the setup is as follows:
+1. Open up the "Article" that holds your site's content. 
+2. Edit it
+3. Add a blank HTML-Element to your article with the contents of nf_gui.html. 
+4. Remove 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+```
+from the top of the file. And remove 
+```html
+</body>
+</html>
+```
+from the bottom of the file. 
+5. Change all paths accordingly (`stylesheet` and module `script` URLs) so they are reachable via HTTP(S), not local filesystem paths.
+6. Preview your changes.
+
+### ES module and path requirements
+
+Because this project uses `type="module"`:
+
+- All CSS/JS/lang files must be reachable via HTTP(S)
+- Keep folder structure intact (`src/css`, `src/js`, `src/lang`, `public/img`)
+- If your CMS page lives at a different path depth, use absolute asset URLs or adjust relative paths
+- Do not use `file://`
 
 ---
 
@@ -237,109 +370,6 @@ debug: {
 
 ---
 
-## Zammad Setup
-
-### Basic Authentication
-
-**Required:** Ensure Basic Authentication is enabled in your Zammad instance. This is typically configured in your Zammad system settings or via API configuration.
-
-### Request Type Custom Object
-
-To enable request type selection in the ticket creation form, you must configure a custom object attribute in Zammad:
-
-1. **Log in to Zammad Admin Panel**
-
-2. **Navigate to Object Manager**
-   - Go to **Settings** > **Object Manager Attributes**
-   - Or access directly via: `https://helpdesk.yourdomain.de/#system/object_manager`
-
-3. **Create New Attribute**
-   - Click **New Attribute**
-   - Select **Ticket** as the object
-   - Set the attribute name to: **`type`** (exactly, case-sensitive)
-   - Choose **Single selection field** as the data type
-
-4. **Configure Options**
-   - Add your request type options (e.g., "General Request", "Incident", "Order")
-   - Each option needs:
-     - **Name**: Display label (e.g., "General Request")
-     - **Value**: Database key (e.g., "general_request")
-   - Set a default value if desired
-
-5. **Example Configuration**
-   ```
-   Option 1:
-   - Name: "General Request"
-   - Value: "general_request"
-   
-   Option 2:
-   - Name: "Incident"
-   - Value: "problem"
-   
-   Option 3:
-   - Name: "Order"
-   - Value: "procurement"
-   ```
-
-6. **Verify API Access**
-   - Test the API endpoint: `https://helpdesk.yourdomain.de/api/v1/object_manager_attributes?object=Ticket&name=type`
-   - Should return the attribute configuration with all options
-
-7. **Configure Frontend**
-   - Set `allowRequestType: true` in `nf-config.js`
-   - Optionally filter allowed types in `filters.allowedRequestTypes`
-   - The dropdown will automatically populate with available options
-
-**Important Notes:**
-- The attribute name must be exactly `type` (lowercase)
-- The attribute must be a "Single selection field" type
-- Values in `allowedRequestTypes` must match the `value` field from the API, not the display name
-- Changes to request types in Zammad will be reflected after cache expiration
-
-### **Required:** Zammad's Reverse Proxy
-Without this, your browser will likely not let you log in because we need to set the CORS header.
-Add this block *directly above(!)* `location /ws {}`:
-
-```bash
- # API-Server CORS (for Intranet-Portal)
- location ^~ /api/ {
-
-  # remove upstream CORS Header
-  proxy_hide_header Access-Control-Allow-Origin;
-  proxy_hide_header Access-Control-Allow-Headers;
-  proxy_hide_header Access-Control-Allow-Methods;
-  proxy_hide_header Access-Control-Allow-Credentials;
-
-  # only allow these origins
-  set $cors_origin "";
-  if ($http_origin = "http://localhost:3000") { set $cors_origin $http_origin; } # local testing (npx serve)
-  if ($http_origin = "https://intranet.yourdomain.de") { set $cors_origin $http_origin; } # the domain where you've embedded the portal
-  if ($http_origin = "https://helpdesk.yourdomain.de") { set $cors_origin $http_origin; } # URL of your zammad instance
-
-  # CORS Header (also for 204)
-  add_header Vary "Origin" always;
-  add_header Access-Control-Allow-Origin $cors_origin always;
-  add_header Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" always;
-  add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With, X-CSRF-Token">
-  add_header Access-Control-Max-Age "86400" always;
-
-  # Preflight without Proxy
-  if ($request_method = OPTIONS) {
-    return 204;
-  }
-
-  proxy_http_version 1.1;
-  proxy_set_header Host $http_host;
-  proxy_set_header CLIENT_IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-  proxy_read_timeout 180;
-  proxy_pass http://zammad-railsserver;
- }
- ```
-Restart your nginx.
----
-
 ## Usage
 
 ### Basic Workflow
@@ -386,62 +416,21 @@ zd-ticket-portal/
 │   │   ├── components/         # Buttons, forms, modals
 │   │   ├── layout/            # Cards, sections
 │   │   └── modules/           # Feature-specific styles
-│   ├── js/                     # JavaScript modules
-│   │   ├── app.js             # Main application entry point
-│   │   ├── core/              # Core system modules
-│   │   │   ├── config.js      # Central configuration
-│   │   │   ├── constants.js   # Global constants
-│   │   │   ├── logger.js      # Logging system
-│   │   │   └── storage.js     # localStorage utilities
-│   │   ├── api/               # API layer
-│   │   │   ├── client.js      # Zammad API client
-│   │   │   ├── http.js        # HTTP utilities
-│   │   │   ├── cache.js       # Caching system
-│   │   │   ├── cache-strategy.js  # Cache TTL strategies
-│   │   │   ├── auth.js        # Authentication service
-│   │   │   ├── tickets.js    # Ticket service
-│   │   │   └── knowledge-base.js  # Knowledge base service
-│   │   ├── state/             # State management
-│   │   │   ├── store.js      # Application state
-│   │   │   └── events.js     # Event bus
-│   │   ├── ui/                # UI layer
-│   │   │   ├── dom.js        # DOM element references
-│   │   │   ├── modal.js      # Modal management
-│   │   │   ├── status.js     # Status messages
-│   │   │   ├── helpers.js    # UI helper functions
-│   │   │   ├── init.js       # UI initialization
-│   │   │   └── modal-utils.js  # Modal utilities
-│   │   ├── features/          # Feature modules
-│   │   │   ├── tickets/      # Ticket features
-│   │   │   │   ├── list.js   # Ticket list
-│   │   │   │   ├── detail.js # Ticket detail view
-│   │   │   │   ├── create.js # Ticket creation
-│   │   │   │   └── actions.js  # Ticket actions (reply, close)
-│   │   │   ├── search/       # Search features
-│   │   │   │   └── knowledge-base.js  # Knowledge base search
-│   │   │   ├── upload/       # File upload
-│   │   │   │   └── file-handler.js  # File handling
-│   │   │   └── gallery/      # Image gallery
-│   │   │       └── viewer.js  # Gallery viewer
-│   │   ├── utils/            # Utility modules
-│   │   │   ├── validation.js  # Input validation
-│   │   │   ├── error-boundary.js  # Error handling
-│   │   │   ├── safe-access.js  # Safe global access
-│   │   │   ├── loading.js     # Loading state wrapper
-│   │   │   ├── errors.js     # Custom error classes
-│   │   │   ├── file-processor.js  # File processing
-│   │   │   ├── performance.js  # Performance monitoring
-│   │   │   ├── visibility.js  # Visibility utilities
-│   │   │   ├── focus.js      # Focus management
-│   │   │   ├── template.js   # Template utilities
-│   │   │   └── debounce.js   # Debounce utility
-│   │   └── i18n/             # Internationalization
-│   │       └── manager.js    # Language manager
+│   ├── js/
+│   │   ├── app.js              # Main ES module entry point
+│   │   ├── api/                # API, auth, HTTP and cache strategy
+│   │   ├── core/               # Config, constants, logger, storage
+│   │   ├── features/           # Tickets, upload, search, gallery
+│   │   ├── i18n/               # Language manager
+│   │   ├── state/              # Store and events
+│   │   ├── ui/                 # Modal, DOM, status, init helpers
+│   │   └── utils/              # Validation, templates, performance, etc.
 │   ├── lang/                   # Language files
 │   │   ├── en/                # English translations
 │   │   └── de/                # German translations
 │   └── html/
 │       └── nf_gui.html        # Main interface
+├── package.json                # Project metadata
 ├── CONTRIBUTING.md             # Contribution guidelines
 ├── LICENSE.md                  # Project license
 ├── README.md                   # This file
@@ -510,15 +499,12 @@ language: {
 
 The project uses ES6 modules with clear separation of concerns:
 
-- **Core Modules** (`core/`) - Configuration, constants, logging, storage
-- **API Layer** (`api/`) - HTTP client, authentication, ticket operations, caching
-- **State Management** (`state/`) - Application state and event bus
-- **UI Layer** (`ui/`) - DOM references, modals, status messages, helpers
-- **Feature Modules** (`features/`) - Tickets, search, file upload, gallery
-- **Utilities** (`utils/`) - Validation, error handling, performance, helpers
-- **Internationalization** (`i18n/`) - Language management
+- **Core Modules** - Configuration, utilities, DOM management
+- **Feature Modules** - Tickets, search, gallery, file upload
+- **UI Modules** - Navigation, modals, status messages
+- **API Modules** - Communication, authentication, caching
 
-All modules follow consistent ES6 import/export patterns with proper dependency injection and no backward compatibility prefixes.
+All modules follow consistent patterns for imports, exports, and error handling.
 
 ---
 
@@ -535,8 +521,8 @@ All modules follow consistent ES6 import/export patterns with proper dependency 
 ### Code Style
 
 - Use ES6 modules for all JavaScript
-- Follow existing naming conventions (no backward compatibility prefixes)
-- Use centralized utilities (`showStatus`, `logger`, etc.)
+- Follow existing naming conventions (`nf*` prefix for functions)
+- Use centralized utilities (`nfShowStatus`, `nfLogger`, etc.)
 - Maintain language file organization
 - Include appropriate debug logging
 - Update documentation for new features
@@ -580,7 +566,7 @@ Test with various scenarios:
 
 **Request Types Not Showing**
 - **Symptom:** Dropdown is empty or hidden
-- **Solution:** Verify `allowRequestType: true` in `src/js/core/config.js`
+- **Solution:** Verify `allowRequestType: true` in configuration
 - **Check:** Confirm custom object is configured in Zammad (see [Zammad Setup](#zammad-setup))
 - **Verify:** Test API endpoint returns attribute data
 - **Debug:** Check browser console for API errors
@@ -626,75 +612,11 @@ For security-related issues, please review the [Security Policy](SECURITY.md) an
 When contributing code:
 
 1. Follow the established ES6 module patterns
-2. Use the centralized `showStatus()` for user messaging
+2. Use the centralized `nfShowStatus()` for user messaging
 3. Maintain the language file organization
 4. Include appropriate debug logging
 5. Test with various ticket states and cache scenarios
 6. Update documentation for new features
-7. Use proper imports instead of global variables
-8. Follow the new directory structure (core/, api/, features/, ui/, utils/, state/, i18n/)
-
----
-
-## Development Timeline
-**January 2026** - Bugfixes & Cleanup
-- Fixed an issue with an import in `create.js`
-- Fixed an issue where the serch bar returned an empty list of results
-- Fixed an issue where `knowledge-base.js` would generate a wrong URL
-
-**November 2025** - Request Types & Cleanup
-- Added request type selection in ticket creation form
-- Configurable filtering of available request types
-- Integration with Zammad custom object attributes
-- Removed all backward compatibility code and `nf` prefixes
-- Renamed DOM object from `nf` to `dom` for clarity
-- Reorganized codebase into logical directories (core/, api/, features/, ui/, utils/, state/, i18n/)
-- Implemented proper dependency injection pattern
-- Created service layer for API operations (AuthService, TicketService, KnowledgeBaseService)
-- Centralized error handling and validation
-- Improved code maintainability and separation of concerns
-- Zero build step deployment with ES6 modules
-
-**July 15, 2025** - Attachment System & Polish
-- Complete attachment implementation with "Attach files..." button for ticket replies
-- Centralized file module (`nf-file-upload.js`) with comprehensive validation, Base64 conversion, and drag-drop
-- Email file support for .eml, .msg, .mbox files
-- Standardized 44px button height for consistent visual appearance
-- Fixed login error handling that caused infinite loader
-- Moved all hardcoded strings to proper language files
-- Enhanced file preview functionality
-
-**July 14, 2025** - Modern Language System
-- Complete migration to JSON-based language management
-- Separated language files by category for better maintainability
-- Event-driven initialization with proper timing synchronization
-- Configurable language paths
-- Improved date localization with consistent locale-based formatting
-- Enhanced event system with consolidated keyboard accessibility handling
-- Finished ES Module Architecture
-
-**July 9, 2025** - ES Module Migration
-- Refactored JavaScript to use modern imports/exports
-- Centralized modal system for unified popup interactions
-- Enhanced UX design with improved modal effects
-- Updated for modern browser requirements
-
-**July 2025** - Cache & Status System Overhaul
-- Intelligent cache architecture with context-aware caching
-- Cross-session persistence for search results and ticket details
-- Smart cache invalidation with manual reload
-- Centralized status system for unified message handling
-- Enhanced login experience with credential hints
-- Configurable TTL values with descriptive naming
-
-**Early July 2025** - Foundation & Core Features
-- Zammad API integration with complete ticket lifecycle management
-- Multi-language support (German and English) with extensible framework
-- Responsive modal design with background blur and layered modals
-- File upload system with drag-and-drop and preview
-- Gallery integration for viewing ticket attachments
-- Knowledge base search integration
-- Accessibility features with keyboard navigation and screen reader support
 
 ---
 

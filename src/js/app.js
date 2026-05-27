@@ -268,8 +268,12 @@ class App {
                 e.preventDefault();
                 const modal = e.target.closest('.nf-ticketdetail-container, .nf-ticketlist-container, .nf-newticket-container, .nf-login-container, .nf-modal-centerbox');
                 if (!modal) return;
-                
-                this.modal.close(modal);
+
+                const closeTarget = modal.classList.contains('nf-modal-centerbox')
+                    ? 'nf_modal_overlay'
+                    : modal;
+
+                this.modal.close(closeTarget);
                 
                 if (modal.classList.contains('nf-ticketdetail-container')) {
                     this.ticketList.show();
@@ -479,6 +483,7 @@ class App {
      */
     _hideAll() {
         import('./ui/helpers.js').then(({ hide }) => {
+            this.modal.close('nf_modal_overlay');
             hide(dom.start);
             hide(dom.ticketListContainer);
             hide(dom.ticketDetailContainer);
@@ -662,19 +667,25 @@ class App {
 // Create singleton instance
 const app = new App();
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        // Wait for language system to be ready
-        window.addEventListener('nfLanguageReady', () => {
-            app.init();
-        });
-    });
+const startApp = () => {
+    app.init();
+};
+
+const startAppWhenDomReady = () => {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', startApp, { once: true });
+    } else {
+        startApp();
+    }
+};
+
+// Handle both orders:
+// 1) language ready after app listener registration (event path)
+// 2) language already ready before app bootstrap (flag path)
+if (window.__nfLanguageReady) {
+    startAppWhenDomReady();
 } else {
-    // DOM already loaded - wait for language system
-    window.addEventListener('nfLanguageReady', () => {
-        app.init();
-    });
+    window.addEventListener('nfLanguageReady', startAppWhenDomReady, { once: true });
 }
 
 // Make available globally

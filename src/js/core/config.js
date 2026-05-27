@@ -281,12 +281,19 @@ if (!configValidation.isValid) {
 
 // Initialize language manager
 if (typeof window !== 'undefined') {
+    // Global readiness flag prevents race conditions with late listeners.
+    if (typeof window.__nfLanguageReady !== 'boolean') {
+        window.__nfLanguageReady = false;
+    }
+
     import('../i18n/manager.js').then(({ default: languageManager }) => {
         languageManager.setLanguage(NF_CONFIG.language.current).then(() => {
             console.log('Language system initialized');
+            window.__nfLanguageReady = true;
             // Fire event for UI initialization
             window.dispatchEvent(new CustomEvent('nfLanguageReady'));
         }).catch(error => {
+            window.__nfLanguageReady = false;
             console.error('Failed to initialize language system:', error);
         });
     });

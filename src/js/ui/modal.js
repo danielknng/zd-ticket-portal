@@ -43,6 +43,18 @@ export const Modal = {
     close(modal) {
         const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
         if (!el) return;
+
+        // Move focus out of the modal before hiding it from assistive tech.
+        const activeElement = document.activeElement;
+        if (activeElement && el.contains(activeElement)) {
+            const trigger = document.getElementById('nf-zammad-trigger');
+            if (trigger) {
+                trigger.focus({ preventScroll: true });
+            } else if (typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
+        }
+
         el.classList.add('nf-hidden');
         el.setAttribute('aria-hidden', 'true');
         this.removeFocusTrap(el);

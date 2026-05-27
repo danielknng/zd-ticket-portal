@@ -392,7 +392,7 @@ function renderAttachments(attachments, container) {
     const allImages = attachments
         .filter(attachment => {
             const attachmentUrl = buildAttachmentUrl(attachment);
-            return isImageFile(attachmentUrl || attachment.filename);
+            return isImageAttachment(attachment, attachmentUrl);
         })
         .map(attachment => ({
             url: buildAttachmentUrl(attachment),
@@ -404,7 +404,7 @@ function renderAttachments(attachments, container) {
         attachDiv.className = 'nf-attachment-item';
         
         const attachmentUrl = buildAttachmentUrl(attachment);
-        const isImage = isImageFile(attachmentUrl || attachment.filename);
+        const isImage = isImageAttachment(attachment, attachmentUrl);
         
         if (isImage) {
             // Create thumbnail for images
@@ -506,6 +506,48 @@ function buildAttachmentUrl(attachment) {
     
     nfLogger.warn('Could not build attachment URL', { attachment });
     return null;
+}
+
+/**
+ * Determines whether an attachment should be rendered as an image.
+ * Uses MIME metadata first, then filename, and finally URL heuristics.
+ * @param {Object} attachment - Attachment object from Zammad API
+ * @param {string|null} attachmentUrl - Resolved attachment URL
+ * @returns {boolean} True if attachment is an image
+ */
+function isImageAttachment(attachment, attachmentUrl) {
+    const mimeType = getAttachmentMimeType(attachment);
+    if (mimeType) {
+        return mimeType.startsWith('image/');
+    }
+
+    if (attachment?.filename) {
+        return isImageFile(attachment.filename);
+    }
+
+    return isImageFile(attachmentUrl);
+}
+
+/**
+ * Extracts attachment MIME type from known Zammad fields.
+ * @param {Object} attachment - Attachment object from Zammad API
+ * @returns {string} Normalized MIME type or empty string
+ */
+function getAttachmentMimeType(attachment) {
+    if (!attachment || typeof attachment !== 'object') return '';
+
+    const mimeCandidates = [
+        attachment.mime_type,
+        attachment.mimetype,
+        attachment.content_type,
+        attachment.contentType,
+        attachment['mime-type'],
+        attachment?.preferences?.['Mime-Type'],
+        attachment?.preferences?.['Content-Type'],
+    ];
+
+    const mimeType = mimeCandidates.find((value) => typeof value === 'string' && value.trim().length > 0);
+    return (mimeType || '').toLowerCase();
 }
 
 /**

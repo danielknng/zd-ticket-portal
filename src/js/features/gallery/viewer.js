@@ -260,15 +260,25 @@ export async function galleryNext() {
 export function isImageFile(url) {
     if (!url) return false;
     const urlLower = url.toLowerCase();
-    
-    // Special handling for Zammad API URLs (no file extensions)
-    if (urlLower.includes('/api/v1/attachments/')) {
+
+    // Explicit data URI support.
+    if (urlLower.startsWith('data:image/')) {
         return true;
     }
-    
-    // Check for standard file extensions
+
+    // Check for standard file extensions (path/filename only).
     const imageExtensions = NF_CONFIG?.security?.imageExtensions || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
-    return imageExtensions.some(ext => urlLower.includes(ext));
+    let pathToCheck = urlLower;
+
+    try {
+        const parsedUrl = new URL(url, window.location.origin);
+        pathToCheck = parsedUrl.pathname.toLowerCase();
+    } catch {
+        // Fallback for plain filenames or non-URL strings.
+        pathToCheck = urlLower.split(/[?#]/)[0];
+    }
+
+    return imageExtensions.some(ext => pathToCheck.endsWith(ext));
 }
 
 /**

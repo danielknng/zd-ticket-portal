@@ -35,7 +35,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1001;
+  z-index: 4001;
   background: var(--success);
   color: var(--bg-white);
   padding: 1rem 2rem;

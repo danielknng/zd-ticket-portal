@@ -53,7 +53,7 @@ export class AuthService {
                     userData = await this.apiClient.authenticate(cleanUsername, cleanPassword);
                 } catch (apiError) {
                     // Handle authentication errors with login attempt tracking
-                    if (apiError.code === 'API_INVALID_CREDENTIALS' || apiError.code === 'API_AUTH_FAILED') {
+                    if (apiError.code === 'INVALID_CREDENTIALS' || apiError.code === 'AUTH_FAILED')
                         const currentAttempts = appState.get('loginAttempts') || 0;
                         const newAttempts = currentAttempts + 1;
                         appState.set('loginAttempts', newAttempts);

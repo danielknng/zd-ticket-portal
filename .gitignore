@@ -67,7 +67,3 @@ config.local.js
 # Test output
 test-results/
 coverage/
-
-# Stuff
-todo.md
-CODE_IMPROVEMENTS.md

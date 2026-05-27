@@ -83,7 +83,7 @@ If this works locally, head to [Installation](#installation).
 
 - **Authentication** - Secure login via Zammad API with Basic Authentication
 - **Ticket Management** - View all tickets (open and closed) with filtering and sorting
-- **Ticket Creation** - Create new tickets with subject, message, and optional request type selection
+- **Ticket Creation** - Create new tickets with subject, message, and optional request type selection (**NEW!**)
 - **File Attachments** - Upload files via drag-and-drop or file picker with preview functionality
 - **Ticket Replies** - Reply to existing tickets with file attachments in messenger-style threads
 - **Image Gallery** - View ticket attachments in a full-screen gallery

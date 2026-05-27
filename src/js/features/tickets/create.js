@@ -57,21 +57,32 @@ export async function handleNewTicketSubmit(e, ticketService, modal) {
             ? requestType.trim() 
             : undefined;
 
-        await ticketService.createTicket({
+        const createdTicket = await ticketService.createTicket({
             subject,
             body,
             files,
             requestType: effectiveRequestType
         });
-        
-        showStatus(getLanguageMessage('ticketCreated', {}, languageManager), 'success', 'newticket');
+
+        const createdTicketId = getCreatedTicketId(createdTicket);
         
         dom.newTicketForm.reset();
         clearFilePreview();
-        
-        // Show start screen
+
+        // Always close the creation modal first, otherwise it remains blurred/inert.
+        modal.close('nf_new_ticket_container');
+
+        if (createdTicketId) {
+            const { showTicketDetailView } = await import('./detail.js');
+            await showTicketDetailView(createdTicketId, ticketService, modal);
+            showStatus(getLanguageMessage('ticketCreated', {}, languageManager), 'success', 'ticketdetail');
+            return;
+        }
+
+        nfLogger.warn('Created ticket response missing id, falling back to start screen', { createdTicket });
         show(dom.start);
         modal.open('nf_modal_overlay');
+        showStatus(getLanguageMessage('ticketCreated', {}, languageManager), 'success', 'main');
     } catch (error) {
         nfLogger.error('Failed to create ticket', { error: error.message });
         showStatus(error.message || 'Error creating ticket', 'error', 'newticket');
@@ -87,6 +98,20 @@ export async function handleNewTicketSubmit(e, ticketService, modal) {
 function getLanguageMessage(key, params = {}, languageManager) {
     if (!languageManager) return '';
     return languageManager.getUtilsMessage(key, params) || '';
+}
+
+/**
+ * Tries to resolve a created ticket id from API responses.
+ * @private
+ * @param {Object} createdTicket - API response payload
+ * @returns {number|string|null}
+ */
+function getCreatedTicketId(createdTicket) {
+    if (!createdTicket || typeof createdTicket !== 'object') return null;
+    return createdTicket.id
+        ?? createdTicket.ticket_id
+        ?? createdTicket.ticket?.id
+        ?? null;
 }
 
 export default handleNewTicketSubmit;

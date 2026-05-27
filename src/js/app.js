@@ -648,17 +648,35 @@ class App {
                 return;
             }
             
-            // Priority 3: Close current modal
-            const activeModal = document.querySelector('.nf-modal-overlay:not(.nf-hidden), .nf-ticketlist-container:not(.nf-hidden), .nf-ticketdetail-container:not(.nf-hidden), .nf-newticket-container:not(.nf-hidden), .nf-login-container:not(.nf-hidden)');
-            if (activeModal) {
-                this.modal.close(activeModal);
-                if (activeModal.classList.contains('nf-ticketdetail-container')) {
-                    this.ticketList.show();
-                } else if (activeModal.classList.contains('nf-ticketlist-container')) {
-                    this._showStart();
-                } else {
-                    this._showStart();
-                }
+            // Priority 3: Close current top-most modal.
+            // querySelector() returns the first match in DOM order, which can
+            // incorrectly target the background overlay. Resolve explicitly.
+            const modalPriority = [
+                'nf_login_container',
+                'nf_new_ticket_container',
+                'nf_ticketdetail_container',
+                'nf_ticketlist_container',
+                'nf_modal_overlay'
+            ];
+            const activeModal = modalPriority
+                .map((id) => document.getElementById(id))
+                .find((modal) => modal && !modal.classList.contains('nf-hidden'));
+
+            if (!activeModal) return;
+
+            this.modal.close(activeModal);
+
+            if (activeModal.classList.contains('nf-ticketdetail-container')) {
+                this.ticketList.show();
+            } else if (activeModal.classList.contains('nf-ticketlist-container')) {
+                this._showStart();
+            } else if (
+                activeModal.classList.contains('nf-newticket-container') ||
+                activeModal.classList.contains('nf-login-container')
+            ) {
+                this._showStart();
+            } else if (activeModal.classList.contains('nf-modal-overlay')) {
+                this._hideAll();
             }
         }
     }

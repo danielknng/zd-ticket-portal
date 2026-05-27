@@ -47,11 +47,12 @@ export const Modal = {
         // Move focus out of the modal before hiding it from assistive tech.
         const activeElement = document.activeElement;
         if (activeElement && el.contains(activeElement)) {
+            if (typeof activeElement.blur === 'function') {
+                activeElement.blur();
+            }
             const trigger = document.getElementById('nf-zammad-trigger');
             if (trigger) {
                 trigger.focus({ preventScroll: true });
-            } else if (typeof activeElement.blur === 'function') {
-                activeElement.blur();
             }
         }
 
@@ -59,6 +60,7 @@ export const Modal = {
         el.setAttribute('aria-hidden', 'true');
         this.removeFocusTrap(el);
         this.unblurBackground(el);
+        this.setAriaHiddenExcept(null);
         this.setInertExcept(null);
     },
 
@@ -121,11 +123,11 @@ export const Modal = {
 
     /**
      * Sets aria-hidden on all modals except the given one
-     * @param {string} modalId
+     * @param {string|null} modalId
      */
     setAriaHiddenExcept(modalId) {
         ModalUtils.forEachModal((el, id) => {
-            if (id === modalId) {
+            if (modalId && id === modalId) {
                 el.setAttribute('aria-hidden', 'false');
             } else {
                 el.setAttribute('aria-hidden', 'true');
@@ -133,7 +135,13 @@ export const Modal = {
         });
         // Additionally hide main content outside the modals
         const mainContent = document.querySelector('body > :not(.nf-modal-overlay):not(.nf-ticketlist-container):not(.nf-ticketdetail-container):not(.nf-gallery-overlay):not(.nf-login-container):not(.nf-newticket-container)');
-        if (mainContent) mainContent.setAttribute('aria-hidden', 'true');
+        if (mainContent) {
+            if (modalId) {
+                mainContent.setAttribute('aria-hidden', 'true');
+            } else {
+                mainContent.setAttribute('aria-hidden', 'false');
+            }
+        }
     },
 
     /**

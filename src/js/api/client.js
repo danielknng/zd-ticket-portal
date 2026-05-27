@@ -171,8 +171,7 @@ export class ZammadApiClient {
         
         // Add status filter if provided
         if (statusCategory && statusCategory !== 'all') {
-            // This would need to be implemented based on your filter logic
-            // For now, returning empty array as placeholder
+            // TODO: Implement Filter
         }
 
         const response = await apiGet(this._buildUrl(`/tickets/search?query=${encodeURIComponent(query)}`), {

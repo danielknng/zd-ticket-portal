@@ -235,13 +235,14 @@ You can integrate the portal into an intranet/CMS (tested with Contao).
 The JavaScript expects the IDs and templates from `src/html/nf_gui.html` (especially `#nf-zammad-trigger` and all modal containers).
 Use the content from the HTML-File (mostly) *unchanged* (see the Contao-example below).
 
-#### Contao (example)
+<details>
+<summary>Usage with Contao (example)</summary>
 
 For Contao, the setup is as follows:
-1. Open up the "Article" that holds your site's content. 
-2. Edit it
-3. Add a blank HTML-Element to your article with the contents of nf_gui.html. 
-4. Remove 
+* Open up the "Article" that holds your site's content. 
+* Edit it
+* Add a blank HTML-Element to your article with the contents of nf_gui.html. 
+* Remove 
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -254,8 +255,9 @@ from the top of the file. And remove
 </html>
 ```
 from the bottom of the file. 
-5. Change all paths accordingly (`stylesheet` and module `script` URLs) so they are reachable via HTTP(S), not local filesystem paths.
-6. Preview your changes.
+* Change all paths accordingly (`stylesheet` and module `script` URLs) so they are reachable via HTTP(S), not local filesystem paths. 
+* Preview your changes. 
+</details>
 
 ### ES module and path requirements
 

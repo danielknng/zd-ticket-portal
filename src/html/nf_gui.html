@@ -5,11 +5,6 @@
 <link rel="stylesheet" href="../css/main.css">
 </head>
 <body>
-<button id="nf-zammad-trigger" class="nf-trigger-btn" aria-label="">
-    <img src="../../public/img/it-service_portal.png"
-         alt=""
-         width="200" height="50">
-</button>
 <!-- Overlay & Modal (initially hidden) -->
 <div class="nf-modal-overlay nf-hidden" id="nf_modal_overlay" role="presentation" aria-hidden="true">
     <div class="nf-modal-centerbox" role="dialog" aria-modal="true" aria-labelledby="nf_main_modal_title" tabindex="-1">
@@ -245,5 +240,47 @@
 <!-- Main application entry point (initializes all services and components) -->
 <!-- Note: app.js handles UI label initialization after language system is ready -->
 <script type="module" src="../js/app.js"></script>
+<script type="module">
+    // Define the launch execution logic
+    const launchStartScreenAndHooks = () => {
+        // 1. Launch the start screen
+        if (window.app && typeof window.app._showStart === 'function') {
+            window.app._showStart();
+        }
+
+        // 2. Add custom postMessage hooks to notify the parent Contao window
+        const closeWidget = () => {
+            if (window.parent !== window) {
+                window.parent.postMessage('close-nf-widget', '*');
+            }
+        };
+
+        // Close on inner "X" button
+        document.getElementById('nf_modal_closebtn_main')?.addEventListener('click', closeWidget);
+        
+        // Close on inner dark backdrop space click
+        document.getElementById('nf_modal_overlay')?.addEventListener('click', (e) => {
+            if (e.target === document.getElementById('nf_modal_overlay')) {
+                closeWidget();
+            }
+        });
+
+        // Close on Escape key press inside the iframe
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeWidget();
+            }
+        });
+    };
+
+    // Safe Check Strategy: Handles both cached instant boot-up and sequential loading
+    if (window.app && window.app.apiClient !== null) {
+        // If app.js already finished initialization before this script was executed
+        launchStartScreenAndHooks();
+    } else {
+        // Otherwise, wait until app.js fires the initialization complete event
+        window.addEventListener('appReady', launchStartScreenAndHooks, { once: true });
+    }
+</script>
 </body>
 </html>

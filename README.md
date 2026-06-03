@@ -242,21 +242,123 @@ Use the content from the HTML-File (mostly) *unchanged* (*see the Contao-example
 For Contao, the setup is as follows:
 * Open up the "Article" that holds your site's content. 
 * Edit it
-* Add a blank HTML-Element to your article with the contents of nf_gui.html. 
-* Remove 
+* Add a blank HTML-Element to your article and add (remember to make sure the paths are correct!):
 ```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
+<button id="intranet-widget-trigger" class="ct-widget-trigger" aria-label="Open Helpdesk Portal">
+    <img src="/files/helpdesk-portal/public/img/it-service_portal.png" alt="IT-Service Portal" width="200" height="50">
+</button>
+
+<style>
+.ct-widget-trigger {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const contaoTrigger = document.getElementById('intranet-widget-trigger');
+    const widgetUrl = '/files/helpdesk-portal/src/html/nf_gui.html';
+
+    // 1. Click Handler
+    contaoTrigger.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.body.style.overflow = 'hidden'; // Stop background scrolling
+
+        let iframe = document.getElementById('widget-frame');
+
+        if (!iframe) {
+            iframe = document.createElement('iframe');
+            iframe.id = 'widget-frame';
+            iframe.setAttribute('allow', 'clipboard-write');
+            iframe.style.cssText = `
+                position: fixed; 
+                top: 0; 
+                left: 0; 
+                width: 100vw; 
+                height: 100vh; 
+                z-index: 99999; 
+                border: none; 
+                opacity: 0; 
+                pointer-events: none; 
+                transition: opacity 0.2s ease;
+            `;
+            
+            document.body.appendChild(iframe);
+            attachIframeListeners(iframe);
+        }
+
+        iframe.src = widgetUrl; 
+        iframe.style.opacity = '1';
+        iframe.style.pointerEvents = 'auto';
+    });
+
+    // 2. Monitoring the Iframe's internally closed state
+    function attachIframeListeners(iframe) {
+        iframe.addEventListener('load', () => {
+            if (iframe.src === 'about:blank') return;
+
+            try {
+                const innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+                // Function to run when closing the widget
+                const closeWidget = () => {
+                    iframe.style.opacity = '0';
+                    iframe.style.pointerEvents = 'none';
+                    document.body.style.overflow = ''; // Restore intranet scroll
+                    iframe.src = 'about:blank'; // Clear out instance state
+                };
+
+                // Close on inner "X" button
+                const innerCloseBtn = innerDoc.getElementById('nf_modal_closebtn_main');
+                if (innerCloseBtn) {
+                    innerCloseBtn.addEventListener('click', closeWidget);
+                }
+
+                // Close on inner dark backdrop space click
+                const innerOverlay = innerDoc.getElementById('nf_modal_overlay');
+                if (innerOverlay) {
+                    innerOverlay.addEventListener('click', (event) => {
+                        if (event.target === innerOverlay) {
+                            setTimeout(closeWidget, 100);
+                        }
+                    });
+                }
+
+                // SMART ESCAPE HANDLER: Intercepts keydown via Capture phase (true)
+                innerDoc.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        // Locate sub-modal view containers
+                        const login = innerDoc.getElementById('nf_login_container');
+                        const newTicket = innerDoc.getElementById('nf_new_ticket_container');
+                        const detail = innerDoc.getElementById('nf_ticketdetail_container');
+                        const list = innerDoc.getElementById('nf_ticketlist_container');
+                        const gallery = innerDoc.getElementById('nf_gallery_overlay');
+
+                        // Check if any sub-panels or image viewer views are active
+                        const subModalActive = [login, newTicket, detail, list].some(
+                            el => el && !el.classList.contains('nf-hidden')
+                        );
+                        const galleryActive = gallery && gallery.classList.contains('nf-gallery-active');
+
+                        // If a nested view is active, do nothing and let app.js step back menus internally.
+                        // If we are back on the base layout, safely release Contao scroll locks.
+                        if (!subModalActive && !galleryActive) {
+                            setTimeout(closeWidget, 100);
+                        }
+                    }
+                }, true); // Crucial: true handles capture phase execution order
+
+            } catch (err) {
+                console.warn("Cross-origin or path restrictions blocked inner frame listeners:", err);
+            }
+        });
+    }
+});
+</script>
 ```
-from the top of the file. And remove 
-```html
-</body>
-</html>
-```
-from the bottom of the file. 
-* Change all paths accordingly (`stylesheet` and module `script` URLs) so they are reachable via HTTP(S), not local filesystem paths. 
 * Preview your changes. 
 </details>
 

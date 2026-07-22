@@ -30,17 +30,10 @@ A modular, internationalized frontend for Zammad-based ticket systems that provi
 ## Table of Contents
 
 - [Overview](#overview)
-- [Quick Start](#quick-start)
-- [Features](#features)
 - [Installation](#installation)
-- [Embedding in an Existing Site](#embedding-in-an-existing-site)
-- [Configuration](#configuration)
 - [Usage](#usage)
-- [Technical Architecture](#technical-architecture)
-- [Development](#development)
+- [Configuration](#configuration)
 - [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -222,7 +215,7 @@ To enable request type selection in the ticket creation form, you must configure
 
 ---
 
-## Embedding in an Existing Site
+## Usage
 
 You can integrate the portal into an intranet/CMS (tested with Contao).
 
@@ -468,36 +461,6 @@ debug: {
 - Search result sources (cache vs. fresh API)
 - Authentication status and errors
 - Modal state changes and events
-
----
-
-## Usage
-
-### Basic Workflow
-
-1. **Open the Portal** - Click the trigger button to open the modal interface
-2. **Login** - Enter your Zammad credentials (username/email and password)
-3. **View Tickets** - Browse your tickets with filtering and sorting options
-4. **Create Ticket** - Click "Create Ticket" and fill in the form
-   - Select request type (if enabled)
-   - Enter subject and message
-   - Attach files if needed
-5. **Reply to Tickets** - Open a ticket and use the reply interface
-6. **Close Tickets** - Mark tickets as resolved when complete
-
-### Keyboard Navigation
-
-- **ESC** - Close current modal or return to previous view
-- **Tab** - Navigate between form fields
-- **Enter** - Submit forms or activate buttons
-- **Arrow Keys** - Navigate image gallery
-
-### File Upload
-
-- **Drag and Drop** - Drag files directly onto the upload area
-- **Click to Select** - Click the upload area to open file picker
-- **Preview** - View selected files before submission
-- **Remove** - Click the X button to remove files from selection
 
 ---
 

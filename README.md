@@ -1,10 +1,6 @@
 # Unofficial Zammad Ticket Portal
 
 ![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-blue.svg)
-![JavaScript](https://img.shields.io/badge/javascript-ES6%2B-yellow.svg)
-![Zammad](https://img.shields.io/badge/zammad-compatible-green.svg)
-![Status](https://img.shields.io/badge/status-active-brightgreen.svg)
-![Contributions](https://img.shields.io/badge/contributions-welcome-brightgreen.svg)
 
 A modular, internationalized frontend for Zammad-based ticket systems that provides a modern user interface for creating and managing support tickets.
 
@@ -613,36 +609,6 @@ All modules follow consistent patterns for imports, exports, and error handling.
 
 ---
 
-## Development
-
-### Development Setup
-
-1. Clone the repository
-2. Install a local web server (or use `npx serve`)
-3. Configure `src/js/core/config.js` with your Zammad instance
-4. Enable debug logging for development
-5. Open `src/html/nf_gui.html` in your browser
-
-### Code Style
-
-- Use ES6 modules for all JavaScript
-- Follow existing naming conventions (`nf*` prefix for functions)
-- Use centralized utilities (`nfShowStatus`, `nfLogger`, etc.)
-- Maintain language file organization
-- Include appropriate debug logging
-- Update documentation for new features
-
-### Testing
-
-Test with various scenarios:
-- Different ticket states (open, closed, archived)
-- Cache scenarios (fresh, cached, expired)
-- File uploads (images, documents, email files)
-- Error conditions (network failures, invalid credentials)
-- Different languages and locales
-
----
-
 ## Troubleshooting
 
 ### Common Issues
@@ -681,49 +647,6 @@ Test with various scenarios:
 - **Solution:** Check file size limits in `src/js/core/config.js`
 - **Check:** Verify allowed file types in security configuration
 - **Debug:** Enable debug logging to see validation errors
-
-### Getting Help
-
-- **Check Issues:** Search existing [GitHub Issues](https://github.com/danielknng/zd-ticket-portal/issues)
-- **Report Bugs:** Use the [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md)
-- **Request Features:** Use the [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md)
-- **Security Issues:** Follow the [Security Policy](SECURITY.md)
-
----
-
-## Contributing
-
-I welcome contributions from the community! This project follows GitHub best practices with comprehensive templates and guidelines.
-
-### Getting Started
-
-Please read the [Contributing Guidelines](CONTRIBUTING.md) for detailed information about:
-- Development setup and prerequisites
-- Code style and conventions
-- Testing requirements
-- Pull request process
-
-### Reporting Issues
-
-- **Bug Reports**: Use the [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md)
-- **Feature Requests**: Use the [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md)
-
-### Security
-
-For security-related issues, please review the [Security Policy](SECURITY.md) and follow the responsible disclosure process outlined there.
-
-### Development Guidelines
-
-When contributing code:
-
-1. Follow the established ES6 module patterns
-2. Use the centralized `nfShowStatus()` for user messaging
-3. Maintain the language file organization
-4. Include appropriate debug logging
-5. Test with various ticket states and cache scenarios
-6. Update documentation for new features
-
----
 
 ## License
 
